@@ -1,71 +1,3669 @@
 <!DOCTYPE html>
-<html>
-<head>
+<html lang="id">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="DocPortal">
+    
+    <title>Document Portal & Inventory Management</title>
 
-<meta name="viewport"
-content="width=device-width,initial-scale=1">
+    <!-- iOS Touch Icon -->
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3652/3652191.png">
 
-<link rel="stylesheet"
-href="style.css">
+    <!-- Google Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    
+    <!-- External Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- HTML5 QR Code & Barcode Scanner Library -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 
-<script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+      :root {
+        --sidebar-bg: #0f172a;
+        --sidebar-hover: #1e293b;
+        --sidebar-active: #2563eb;
+        --sidebar-text: #94a3b8;
+        --sidebar-text-active: #ffffff;
+        --body-bg: #f8fafc;
+        --card-bg: #ffffff;
+        --card-border: #e2e8f0;
+        --primary-color: #2563eb;
+        --primary-hover: #1d4ed8;
+        --text-main: #1e293b;
+        --text-muted: #64748b;
+        --border-radius-sm: 8px;
+        --border-radius-md: 12px;
+        --border-radius-lg: 16px;
+        --shadow-subtle: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+        --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+      }
 
-</head>
+      * {
+        box-sizing: border-box;
+      }
 
-<body>
+      body {
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+        background-color: var(--body-bg);
+        margin: 0;
+        color: var(--text-main);
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+      }
 
-<div class="card">
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
 
-<h2>Inventory Part Engineering Segara</h2>
+      .wrapper {
+        display: flex;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        position: relative;
+      }
 
-<div id="menu">
+      /* SIDEBAR UI MODERN */
+      #sidebar {
+        min-width: 280px;
+        max-width: 280px;
+        background: var(--sidebar-bg);
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        border-right: 1px solid #1e293b;
+        z-index: 1040;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 4px 0 24px rgba(0,0,0,0.12);
+      }
 
-<button onclick="pilih('IN')">
-➕ IN
-</button>
+      .sidebar-brand {
+        padding: 24px 20px;
+        font-size: 1.1rem;
+        font-weight: 700;
+        letter-spacing: -0.3px;
+        color: #f8fafc;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
 
-<button onclick="pilih('OUT')">
-➖ OUT
-</button>
+      .sidebar-brand .brand-logo-icon {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, #2563eb, #3b82f6);
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        font-size: 1.2rem;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+      }
 
-</div>
+      .sidebar-menu {
+        padding: 16px 12px;
+        list-style: none;
+        margin: 0;
+        overflow-y: auto;
+        flex-grow: 1;
+      }
 
-<div id="scanner"
-style="display:none">
+      .sidebar-menu li {
+        margin-bottom: 4px;
+      }
 
-<div id="reader"></div>
+      .sidebar-menu li a {
+        padding: 10px 14px;
+        font-size: 0.88rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        color: var(--sidebar-text);
+        text-decoration: none;
+        border-radius: var(--border-radius-sm);
+        transition: all 0.2s ease;
+      }
 
-</div>
+      .sidebar-menu li a:hover {
+        color: #f8fafc;
+        background: var(--sidebar-hover);
+        transform: translateX(2px);
+      }
 
-<div id="form"
-style="display:none">
+      .sidebar-menu li.active > a {
+        color: var(--sidebar-text-active);
+        background: var(--sidebar-active);
+        font-weight: 600;
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+      }
 
-<h3 id="nama"></h3>
+      .sidebar-menu li a i {
+        font-size: 1.15rem;
+        margin-right: 12px;
+      }
 
-<input
-id="qty"
-type="number"
-placeholder="Qty">
+      .submenu {
+        list-style: none;
+        padding-left: 0;
+        margin-top: 4px;
+        margin-bottom: 8px;
+        position: relative;
+      }
+      
+      .submenu::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 26px;
+        width: 2px;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 2px;
+      }
 
-<br><br>
+      .submenu li a {
+        padding-left: 42px !important;
+        font-size: 0.83rem !important;
+        color: #94a3b8;
+        border-radius: var(--border-radius-sm);
+      }
 
-<button onclick="simpan()">
-💾 Simpan
-</button>
+      .submenu li a:hover {
+        color: #38bdf8 !important;
+        background: rgba(255, 255, 255, 0.04) !important;
+      }
 
-</div>
+      .sub-submenu {
+        list-style: none;
+        padding-left: 12px;
+        margin-top: 2px;
+      }
 
-</div>
+      /* DASHBOARD METRIC CARDS */
+      .metric-card {
+        border-radius: var(--border-radius-md);
+        padding: 20px;
+        background: #ffffff;
+        border: 1px solid var(--card-border);
+        box-shadow: var(--shadow-card);
+        transition: all 0.2s ease;
+      }
 
-<script src="app.js"></script>
+      .metric-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-hover);
+      }
 
-<div id="loading">
+      .metric-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+      }
 
-<div class="loader"></div>
+      /* PWA PROMPT BANNER FLOATING */
+      #pwaInstallBanner {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1090;
+        max-width: 360px;
+        background: #0f172a;
+        color: #ffffff;
+        border-radius: 14px;
+        padding: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        display: none;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
 
-<p>Loading...</p>
+      /* MOBILE TOPBAR NAV UI */
+      .mobile-topbar {
+        display: none;
+        background: #0f172a;
+        color: #fff;
+        padding: 12px 20px;
+        align-items: center;
+        justify-content: space-between;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1030;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+      }
 
-</div>
+      .sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(15, 23, 42, 0.6);
+        z-index: 1035;
+        backdrop-filter: blur(4px);
+        transition: all 0.3s ease;
+      }
 
-</body>
+      /* CONTENT AREA */
+      #content {
+        flex-grow: 1;
+        padding: 32px 36px;
+        overflow-y: auto;
+        background-color: var(--body-bg);
+      }
+
+      .card-custom {
+        background: var(--card-bg);
+        border: 1px solid var(--card-border);
+        border-radius: var(--border-radius-md);
+        box-shadow: var(--shadow-card);
+        transition: box-shadow 0.2s ease, border-color 0.2s ease;
+      }
+
+      .card-custom:hover {
+        box-shadow: var(--shadow-hover);
+      }
+
+      /* TABLES UI MODERN */
+      .table-inventory {
+        margin-bottom: 0;
+        table-layout: fixed;
+        width: 100%;
+      }
+
+      .table-inventory thead th {
+        background-color: #f1f5f9;
+        color: #475569;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        font-weight: 700;
+        padding: 14px 12px;
+        border-bottom: 1px solid var(--card-border);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .table-inventory tbody td {
+        padding: 14px 12px;
+        font-size: 0.85rem;
+        border-bottom: 1px solid #f1f5f9;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        vertical-align: middle;
+      }
+
+      .table-inventory tbody tr {
+        transition: background-color 0.15s ease;
+      }
+
+      .table-inventory tbody tr:hover {
+        background-color: #f8fafc;
+      }
+
+      .table-custom thead th {
+        background-color: #f1f5f9;
+        color: #475569;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        font-weight: 700;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--card-border);
+      }
+
+      .table-custom tbody td {
+        padding: 14px 16px;
+        font-size: 0.85rem;
+        border-bottom: 1px solid #f1f5f9;
+      }
+
+      .btn-icon-action {
+        width: 34px;
+        height: 34px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+      }
+
+      .btn-icon-action:hover {
+        transform: translateY(-1px);
+      }
+
+      .search-box {
+        position: relative;
+        min-width: 260px;
+      }
+      .search-box i.bi-search {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #94a3b8;
+        font-size: 0.95rem;
+      }
+      .search-box input {
+        padding-left: 40px;
+        border-radius: 10px;
+        border: 1px solid var(--card-border);
+        font-size: 0.88rem;
+        background-color: #ffffff;
+        box-shadow: var(--shadow-subtle);
+        transition: all 0.2s ease;
+      }
+
+      .search-box input:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+      }
+
+      /* DAILY WORK SECTION COMPONENTS */
+      .daily-work-date-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: var(--border-radius-md);
+        padding: 20px 24px;
+        box-shadow: var(--shadow-card);
+      }
+
+      .btn-shift-select {
+        border: 1.5px solid #e2e8f0;
+        border-radius: var(--border-radius-md);
+        padding: 12px 18px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: #475569;
+        background-color: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        box-shadow: var(--shadow-subtle);
+        transition: all 0.2s ease;
+      }
+
+      .btn-shift-select:hover {
+        border-color: #cbd5e1;
+        background-color: #f8fafc;
+        transform: translateY(-1px);
+      }
+
+      .btn-shift-select.active {
+        border-color: #2563eb;
+        background-color: #eff6ff;
+        color: #1e40af;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+      }
+
+      .badge-count {
+        background-color: #2563eb;
+        color: #ffffff;
+        border-radius: 30px;
+        padding: 2px 10px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.8rem;
+        font-weight: 700;
+      }
+
+      .btn-shift-select.active .badge-count {
+        background-color: #2563eb;
+      }
+
+      .btn-add-task {
+        background: linear-gradient(135deg, #059669, #10b981);
+        color: #ffffff;
+        font-weight: 700;
+        border-radius: 10px;
+        padding: 10px 20px;
+        border: none;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+        transition: all 0.2s ease;
+      }
+
+      .btn-add-task:hover {
+        background: linear-gradient(135deg, #047857, #059669);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+      }
+
+      .card-task-item {
+        border: 1px solid #e2e8f0;
+        border-left: 5px solid #eab308;
+        border-radius: var(--border-radius-md);
+        padding: 20px 24px;
+        background-color: #ffffff;
+        box-shadow: var(--shadow-card);
+        transition: all 0.2s ease;
+      }
+
+      .card-task-item:hover {
+        box-shadow: var(--shadow-hover);
+      }
+
+      .card-task-item.status-selesai {
+        border-left-color: #10b981;
+      }
+
+      .badge-task-pending {
+        background-color: #fef9c3;
+        color: #a16207;
+        font-weight: 800;
+        font-size: 0.72rem;
+        padding: 5px 12px;
+        border-radius: 30px;
+        letter-spacing: 0.3px;
+      }
+
+      .badge-task-selesai {
+        background-color: #d1fae5;
+        color: #047857;
+        font-weight: 800;
+        font-size: 0.72rem;
+        padding: 5px 12px;
+        border-radius: 30px;
+        letter-spacing: 0.3px;
+      }
+
+      .badge-status-0 {
+        background-color: #f1f5f9;
+        color: #64748b;
+        font-weight: 700;
+        font-size: 0.75rem;
+        padding: 4px 10px;
+        border-radius: 30px;
+      }
+
+      .badge-status-1 {
+        background-color: #fef3c7;
+        color: #d97706;
+        font-weight: 700;
+        font-size: 0.75rem;
+        padding: 4px 10px;
+        border-radius: 30px;
+      }
+
+      .badge-status-2 {
+        background-color: #d1fae5;
+        color: #059669;
+        font-weight: 700;
+        font-size: 0.75rem;
+        padding: 4px 10px;
+        border-radius: 30px;
+      }
+
+      .btn-delete-task {
+        border: 1px solid #fee2e2;
+        color: #dc2626;
+        background-color: #fef2f2;
+        border-radius: 8px;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+      }
+
+      .btn-delete-task:hover {
+        background-color: #dc2626;
+        color: #ffffff;
+      }
+
+      .btn-save-pdf {
+        background: linear-gradient(135deg, #e11d48, #f43f5e);
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 0.95rem;
+        border-radius: 10px;
+        padding: 12px 26px;
+        border: none;
+        box-shadow: 0 4px 14px rgba(225, 29, 72, 0.3);
+        transition: all 0.2s ease;
+      }
+
+      .btn-save-pdf:hover {
+        background: linear-gradient(135deg, #be123c, #e11d48);
+        transform: translateY(-1px);
+        box-shadow: 0 6px 18px rgba(225, 29, 72, 0.4);
+      }
+
+      /* MODAL UI MODERN */
+      .modal-content {
+        border-radius: var(--border-radius-lg);
+        border: 1px solid var(--card-border);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        overflow: hidden;
+      }
+
+      .modal-header {
+        border-bottom: 1px solid var(--card-border);
+        padding: 20px 24px;
+        background-color: #ffffff;
+      }
+
+      .sparepart-row-item {
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 14px;
+        margin-bottom: 12px;
+        position: relative;
+        box-shadow: var(--shadow-subtle);
+      }
+
+      /* SEARCH DROPDOWN AUTOCOMPLETE */
+      .sp-search-container {
+        position: relative;
+      }
+
+      .sp-search-results {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 1055;
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+        display: none;
+      }
+
+      .sp-search-item {
+        padding: 10px 14px;
+        font-size: 0.85rem;
+        cursor: pointer;
+        border-bottom: 1px solid #f1f5f9;
+        transition: background 0.15s ease;
+      }
+
+      .sp-search-item:last-child {
+        border-bottom: none;
+      }
+
+      .sp-search-item:hover {
+        background-color: #eff6ff;
+        color: #2563eb;
+      }
+
+      /* PDF CANVAS PREVIEWER */
+      #pdf-container {
+        position: relative;
+        border: 1px solid var(--card-border);
+        border-radius: 12px;
+        background-color: #334155;
+        overflow: auto;
+        height: 560px;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        box-shadow: inset 0 2px 6px rgba(0,0,0,0.2);
+      }
+
+      #pdf-render-wrapper {
+        position: relative;
+        display: inline-block;
+        margin: 20px auto;
+      }
+
+      #pdf-canvas {
+        border-radius: 6px;
+        display: block;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      }
+
+      .draggable-signature {
+        position: absolute;
+        border: 2px dashed #2563eb;
+        background-color: rgba(37, 99, 235, 0.15);
+        cursor: move;
+        user-select: none;
+        display: none;
+        z-index: 10;
+        border-radius: 6px;
+        backdrop-filter: blur(2px);
+      }
+
+      .draggable-signature img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+      }
+
+      .resize-handle {
+        width: 16px;
+        height: 16px;
+        background-color: #2563eb;
+        border: 2px solid #ffffff;
+        border-radius: 50%;
+        position: absolute;
+        right: -8px;
+        bottom: -8px;
+        cursor: nwse-resize;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      }
+
+      #signature-pad {
+        border: 2px dashed #cbd5e1;
+        border-radius: 10px;
+        background: #ffffff;
+        cursor: crosshair;
+        touch-action: none;
+        width: 100%;
+        max-width: 380px;
+      }
+
+      /* RESPONSIVE DESIGN BREAKPOINTS */
+      @media (max-width: 991.98px) {
+        .mobile-topbar { 
+          display: flex; 
+        }
+        #sidebar { 
+          position: fixed; 
+          top: 0; 
+          bottom: 0; 
+          left: 0; 
+          transform: translateX(-100%); 
+        }
+        #sidebar.show-mobile { 
+          transform: translateX(0); 
+        }
+        .sidebar-overlay.show-mobile { 
+          display: block; 
+        }
+        #content { 
+          padding: 20px 16px; 
+          margin-top: 60px; 
+          height: calc(100vh - 60px); 
+        }
+        .btn-shift-select {
+          font-size: 0.82rem;
+          padding: 10px 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- PWA Install Banner Floating -->
+    <div id="pwaInstallBanner">
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <div class="fw-bold fs-6"><i class="bi bi-download text-primary me-2"></i>Install Aplikasi</div>
+        <button type="button" class="btn-close btn-close-white btn-sm" id="closePwaBannerBtn"></button>
+      </div>
+      <p class="small text-white-50 mb-3">Install portal ini di Home Screen smartphone Anda untuk akses cepat & lancar.</p>
+      <button class="btn btn-primary btn-sm w-100 fw-bold" id="btnInstallPwa"><i class="bi bi-plus-circle me-1"></i> Tambah ke Utama</button>
+    </div>
+
+    <!-- Mobile Topbar Navbar -->
+    <div class="mobile-topbar">
+      <div class="d-flex align-items-center">
+        <button id="mobileSidebarToggle" class="btn btn-dark btn-sm border-0 me-3 fs-4 p-0 text-white">
+          <i class="bi bi-list"></i>
+        </button>
+        <span class="fw-bold fs-6 d-flex align-items-center">
+          <i class="bi bi-folder2-open me-2 text-primary fs-5"></i> Document Portal
+        </span>
+      </div>
+    </div>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="wrapper">
+      <!-- Sidebar Navigation -->
+      <nav id="sidebar">
+        <div class="sidebar-brand">
+          <div class="d-flex align-items-center gap-2">
+            <span class="brand-logo-icon"><i class="bi bi-folder2-open"></i></span>
+            <div>
+              <div class="lh-1">Document Portal</div>
+              <span class="text-muted fw-normal" style="font-size: 0.72rem; letter-spacing: 0;">Management System</span>
+            </div>
+          </div>
+          <button id="sidebarCloseBtn" class="btn text-white p-0 d-lg-none fs-5"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <ul class="sidebar-menu">
+          <li class="nav-item-link active" data-target="home-section"><a href="#"><i class="bi bi-house-door"></i> Home</a></li>
+          <li>
+            <a href="#pekerjaanSubmenu" data-bs-toggle="collapse" aria-expanded="true" class="dropdown-toggle"><i class="bi bi-briefcase"></i> Pekerjaan</a>
+            <ul class="collapse show submenu" id="pekerjaanSubmenu">
+              <li><a href="#" id="dailyWorkMenuLink" class="text-primary fw-semibold"><i class="bi bi-calendar-check me-2"></i>Daily Work</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#inventorySubmenu" data-bs-toggle="collapse" aria-expanded="true" class="dropdown-toggle"><i class="bi bi-box-seam"></i> Inventory</a>
+            <ul class="collapse show submenu" id="inventorySubmenu">
+              <li><a href="#" id="lowStockMenuLink" class="text-danger fw-semibold"><i class="bi bi-exclamation-triangle me-2"></i>Low Stok</a></li>
+              <li><a href="#" id="listBelanjaMenuLink" class="text-primary fw-semibold"><i class="bi bi-cart-check me-2"></i>List Belanja</a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#arsipSubmenu" data-bs-toggle="collapse" aria-expanded="true" class="dropdown-toggle"><i class="bi bi-archive"></i> Arsip</a>
+            <ul class="collapse show submenu" id="arsipSubmenu">
+              <li><a href="#" class="text-muted"><i class="bi bi-arrow-repeat spin"></i> Memuat subfolder...</a></li>
+            </ul>
+          </li>
+          <li class="nav-item-link" data-target="pengaturan-section"><a href="#"><i class="bi bi-gear"></i> Pengaturan</a></li>
+        </ul>
+      </nav>
+
+      <!-- Main Content Area -->
+      <div id="content">
+        <!-- Home Section / DASHBOARD METRICS ANALYTICS -->
+        <div id="home-section" class="content-section">
+          <div class="card-custom p-4 p-md-5 bg-white mb-4">
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <div class="p-3 bg-primary-subtle text-primary rounded-3">
+                <i class="bi bi-speedometer2 fs-2"></i>
+              </div>
+              <div>
+                <h3 class="fw-bold mb-1">Selamat Datang di Portal Sistem</h3>
+                <p class="text-muted mb-0">Manajemen dokumen digital, laporan pekerjaan operasional harian, dan kontrol inventaris gudang.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dashboard Stats Grid -->
+          <div class="row g-3 mb-4">
+            <div class="col-6 col-lg-3">
+              <div class="metric-card">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <div class="metric-icon bg-success-subtle text-success"><i class="bi bi-check-circle"></i></div>
+                  <span class="fs-4 fw-extrabold text-dark" id="statTodayDone">0</span>
+                </div>
+                <div class="fw-semibold text-secondary small">Pekerjaan Selesai Hari Ini</div>
+              </div>
+            </div>
+            <div class="col-6 col-lg-3">
+              <div class="metric-card">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <div class="metric-icon bg-warning-subtle text-warning"><i class="bi bi-hourglass-split"></i></div>
+                  <span class="fs-4 fw-extrabold text-dark" id="statTotalPending">0</span>
+                </div>
+                <div class="fw-semibold text-secondary small">Total Pekerjaan Pending</div>
+              </div>
+            </div>
+            <div class="col-6 col-lg-3">
+              <div class="metric-card">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <div class="metric-icon bg-danger-subtle text-danger"><i class="bi bi-exclamation-triangle"></i></div>
+                  <span class="fs-4 fw-extrabold text-dark" id="statTotalLowStock">0</span>
+                </div>
+                <div class="fw-semibold text-secondary small">Item Barang Low Stock</div>
+              </div>
+            </div>
+            <div class="col-6 col-lg-3">
+              <div class="metric-card">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                  <div class="metric-icon bg-primary-subtle text-primary"><i class="bi bi-cart3"></i></div>
+                  <span class="fs-4 fw-extrabold text-dark" id="statOrderInProgress">0</span>
+                </div>
+                <div class="fw-semibold text-secondary small">Pengadaan Dalam Proses</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pekerjaan / Daily Work Section -->
+        <div id="daily-work-section" class="content-section d-none">
+          <div class="daily-work-date-card mb-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+              <div class="fw-bold text-dark fs-6 d-flex align-items-center gap-2">
+                <i class="bi bi-calendar-event text-primary fs-5"></i> Tanggal Laporan Operasional:
+              </div>
+              <span class="text-muted small">Laporan shift otomatis disesuaikan dengan tanggal operasional aktif</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge bg-primary fs-6 px-3 py-2" id="displayAutoDate">-</span>
+              <input type="hidden" id="dailyReportDatePicker">
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <div class="text-uppercase fw-bold text-secondary small mb-3 letter-spacing-1"><i class="bi bi-clock-history me-1"></i> Pilih Shift Operasional</div>
+            <div class="row g-3">
+              <div class="col-6 col-md-3">
+                <button class="btn-shift-select active w-100" id="btnShiftPagi">
+                  <span><i class="bi bi-brightness-high-fill text-warning me-2"></i>PAGI</span>
+                  <span class="badge-count" id="countPagi">0</span>
+                </button>
+              </div>
+              <div class="col-6 col-md-3">
+                <button class="btn-shift-select w-100" id="btnShiftSore">
+                  <span><i class="bi bi-sunset-fill text-warning me-2"></i>SORE</span>
+                  <span class="badge-count" id="countSore">0</span>
+                </button>
+              </div>
+              <div class="col-6 col-md-3">
+                <button class="btn-shift-select w-100" id="btnShiftMalam">
+                  <span><i class="bi bi-moon-stars-fill text-primary me-2"></i>MALAM</span>
+                  <span class="badge-count" id="countMalam">0</span>
+                </button>
+              </div>
+              <div class="col-6 col-md-3">
+                <button class="btn-shift-select btn-pending w-100" id="btnShiftPending">
+                  <span><i class="bi bi-hourglass-split text-warning me-2"></i>PENDING</span>
+                  <span class="badge-count badge-pending" id="countPending">0</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <hr class="my-4 text-muted opacity-25">
+
+          <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <h4 class="fw-bold text-primary mb-0 d-flex align-items-center gap-2" id="shiftTitleDisplay">
+              SHIFT PAGI
+            </h4>
+            <button class="btn-add-task shadow-sm" id="btnOpenAddTaskModal"><i class="bi bi-plus-lg me-1"></i> Pekerjaan Yang Dilakukan</button>
+          </div>
+
+          <div id="taskListContainer" class="d-grid gap-3 mb-5">
+            <div class="text-center py-5 text-muted"><div class="spinner-border text-primary spinner-border-sm me-2"></div>Memuat daftar pekerjaan...</div>
+          </div>
+
+          <hr class="my-4 text-muted opacity-25">
+
+          <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 card-custom p-3">
+            <div class="text-danger fw-bold small d-flex align-items-center gap-2"><i class="bi bi-exclamation-triangle-fill fs-6"></i> Wajib Isi Pekerjaan Pada Shift Untuk Menyimpan Laporan.</div>
+            <button class="btn-save-pdf" id="btnSavePdfDrive"><i class="bi bi-file-earmark-pdf-fill me-1"></i> Save to PDF & Drive</button>
+          </div>
+        </div>
+
+        <!-- Inventory Section -->
+        <div id="inventory-section" class="content-section d-none">
+          <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <div>
+              <h4 class="fw-bold mb-1" id="inventoryTitle">Inventory Gudang</h4>
+              <p class="text-muted small mb-0" id="inventorySubtitle">Pencatatan dan pengelolaan stok data inventaris gudang.</p>
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-wrap w-100 w-md-auto">
+              <div class="search-box flex-grow-1 flex-md-grow-0 d-flex gap-1">
+                <i class="bi bi-search"></i>
+                <input type="text" id="inventorySearchInput" class="form-control" placeholder="Cari barcode atau nama barang...">
+                <button class="btn btn-outline-secondary btn-sm rounded-3" id="btnScanSearchBarcode" title="Scan Barcode Kamera"><i class="bi bi-camera fs-6"></i></button>
+              </div>
+              <div class="d-flex gap-2 w-100 w-md-auto">
+                <button class="btn btn-outline-primary btn-sm fw-semibold px-3 py-2 flex-grow-1 flex-md-grow-0 rounded-3" data-bs-toggle="modal" data-bs-target="#addGudangModal"><i class="bi bi-plus-square me-1"></i> Tambah Gudang</button>
+                <button class="btn btn-primary btn-sm fw-semibold px-3 py-2 d-none flex-grow-1 flex-md-grow-0 rounded-3" id="openChooseModeBtn"><i class="bi bi-plus-circle me-1"></i> Tambah Barang</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-custom">
+            <div class="table-responsive">
+              <table class="table table-inventory align-middle">
+                <thead>
+                  <tr>
+                    <th style="width: 100px;">Barcode</th>
+                    <th style="width: 145px;" id="colHeaderNama">Nama Barang</th>
+                    <th style="width: 95px;">Kategori</th>
+                    <th style="width: 85px;">Merk</th>
+                    <th style="width: 115px;">Spesifikasi</th>
+                    <th style="width: 65px;">Satuan</th>
+                    <th style="width: 80px;">Rak</th>
+                    <th style="width: 60px;" class="text-center">Stok</th>
+                    <th style="width: 60px;" class="text-center">Min</th>
+                    <th style="width: 95px;">Supplier</th>
+                    <th class="text-end" style="width: 85px; padding-right: 12px;" id="colHeaderAksi">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="inventoryTableBody">
+                  <tr><td colspan="11" class="text-center py-5 text-muted"><i class="bi bi-box-seam display-6 mb-2 d-block opacity-50"></i>Pilih sub-menu gudang di sidebar atau buat gudang baru.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- List Belanja Section -->
+        <div id="list-belanja-section" class="content-section d-none">
+          <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <div>
+              <h4 class="fw-bold mb-1"><i class="bi bi-cart-check me-2 text-primary"></i>Daftar List Belanja & Pengadaan</h4>
+              <p class="text-muted small mb-0">Kelola pengajuan PR/PO dan konfirmasi penerimaan barang ke gudang.</p>
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-wrap w-100 w-md-auto">
+              <div class="search-box flex-grow-1 flex-md-grow-0">
+                <i class="bi bi-search"></i>
+                <input type="text" id="shoppingSearchInput" class="form-control" placeholder="Cari nama, ket, No PR, No PO...">
+              </div>
+              <button id="bulkPrPoBtn" class="btn btn-warning text-dark fw-semibold btn-sm px-3 py-2 shadow-sm d-none rounded-3">
+                <i class="bi bi-file-earmark-plus me-1"></i> Proses PR/PO Terpilih (<span id="selectedCount">0</span>)
+              </button>
+            </div>
+          </div>
+
+          <div class="btn-group mb-3 bg-white border p-1 rounded-3" role="group" id="shoppingStatusFilterGroup">
+            <button type="button" class="btn btn-sm btn-light active rounded-2 fw-bold" data-status="all">Semua Status</button>
+            <button type="button" class="btn btn-sm btn-light text-secondary rounded-2" data-status="Draft Order">Draft Order</button>
+            <button type="button" class="btn btn-sm btn-light text-warning rounded-2" data-status="Sedang Proses">Sedang Proses</button>
+            <button type="button" class="btn btn-sm btn-light text-success rounded-2" data-status="Selesai / Diterima">Selesai / Diterima</button>
+          </div>
+
+          <div class="card-custom">
+            <div class="table-responsive">
+              <table class="table table-inventory align-middle">
+                <thead>
+                  <tr>
+                    <th style="width: 40px;" class="text-center"><input type="checkbox" id="selectAllShoppingList" class="form-check-input" title="Pilih Semua Item Draft"></th>
+                    <th style="width: 110px;">ID Order</th>
+                    <th style="width: 85px;">Gudang</th>
+                    <th style="width: 130px;">Nama Barang</th>
+                    <th style="width: 55px;" class="text-center">Qty</th>
+                    <th style="width: 110px;">Keterangan</th>
+                    <th style="width: 100px;">No PR</th>
+                    <th style="width: 100px;">No PO</th>
+                    <th style="width: 110px;">Status</th>
+                    <th style="width: 110px;">Tgl Order</th>
+                    <th class="text-end" style="width: 110px; padding-right: 12px;">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="shoppingListTableBody">
+                  <tr><td colspan="11" class="text-center py-5 text-muted"><i class="bi bi-cart display-6 mb-2 d-block opacity-50"></i>Memuat daftar pengadaan barang...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Arsip Section -->
+        <div id="arsip-section" class="content-section d-none">
+          <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <div>
+              <h4 class="fw-bold mb-1" id="arsipTitle">Arsip Dokumen</h4>
+              <p class="text-muted small mb-0">Kelola dan tandatangani file PDF secara online.</p>
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-wrap w-100 w-md-auto">
+              <div class="search-box flex-grow-1 flex-md-grow-0">
+                <i class="bi bi-search"></i>
+                <input type="text" id="searchInput" class="form-control" placeholder="Cari nama dokumen...">
+              </div>
+              <div class="btn-group p-1 bg-white border rounded-3" role="group" id="filterButtonGroup">
+                <button type="button" class="btn btn-sm btn-filter btn-primary active rounded-2" data-status="all">Semua</button>
+                <button type="button" class="btn btn-sm btn-filter btn-light text-secondary rounded-2" data-status="0/2">0/2</button>
+                <button type="button" class="btn btn-sm btn-filter btn-light text-warning rounded-2" data-status="1/2">1/2</button>
+                <button type="button" class="btn btn-sm btn-filter btn-light text-success rounded-2" data-status="2/2">2/2</button>
+              </div>
+              <span class="badge bg-primary-subtle text-primary fw-semibold px-3 py-2 rounded-pill text-nowrap" id="activeFolderBadge">Folder: All</span>
+            </div>
+          </div>
+
+          <div class="card-custom">
+            <div class="table-responsive">
+              <table class="table table-custom align-middle">
+                <thead>
+                  <tr>
+                    <th>Dokumen</th>
+                    <th>Status</th>
+                    <th>Ukuran</th>
+                    <th>Terakhir Diperbarui</th>
+                    <th class="text-end text-nowrap" style="padding-right: 24px;">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="pdfTableBody">
+                  <tr><td colspan="5" class="text-center py-5 text-muted"><i class="bi bi-folder2-open display-6 mb-2 d-block opacity-50"></i>Pilih subfolder Arsip di sidebar untuk melihat daftar file PDF.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pengaturan Section -->
+        <div id="pengaturan-section" class="content-section d-none">
+          <div class="card-custom p-4">
+            <h4 class="fw-bold mb-1">Pengaturan</h4>
+            <p class="text-muted">Konfigurasi sistem portal dan hak akses.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Camera Scanner Barcode -->
+    <div class="modal fade" id="cameraScannerModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h6 class="modal-title fw-bold text-dark mb-0"><i class="bi bi-camera me-2 text-primary"></i>Scan Barcode Barang</h6>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" id="closeCameraModalBtn"></button>
+          </div>
+          <div class="modal-body p-3 text-center">
+            <div id="reader" style="width: 100%; max-width: 400px; margin: 0 auto;"></div>
+            <div class="text-muted small mt-2">Arahkan kamera smartphone ke kode barcode barang</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Form Tambah Pekerjaan Daily Work -->
+    <div class="modal fade" id="addTaskModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h6 class="modal-title fw-bold text-dark mb-0"><i class="bi bi-plus-circle me-2 text-success"></i>Tambah Pekerjaan Dilakukan</h6>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-4">
+            <div class="mb-3">
+              <label class="form-label fw-semibold small text-dark mb-1">Tanggal Operasional Laporan:</label>
+              <select id="taskOperationalDateSelect" class="form-select">
+                <!-- Diisi otomatis oleh JavaScript -->
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold small text-dark mb-1">Nama Personel / Teknisi:</label>
+              <input type="text" id="taskPersonName" class="form-control" placeholder="Contoh: I Putu Ogik Antara Putra">
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold small text-dark mb-1">Deskripsi Pekerjaan:</label>
+              <textarea id="taskDescription" class="form-control" rows="3" placeholder="Deskripsikan pekerjaan yang dilakukan..."></textarea>
+            </div>
+            
+            <div class="mb-3">
+              <label class="form-label fw-semibold small text-dark mb-1">Penggantian Sparepart:</label>
+              <select id="taskSparepartStatus" class="form-select">
+                <option value="Tidak">Tidak</option>
+                <option value="Ya">Ya</option>
+              </select>
+            </div>
+
+            <!-- Area Pilihan Sparepart Dinamis -->
+            <div id="sparepartSelectionArea" class="d-none mb-3 p-3 border rounded-3 bg-light">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <label class="fw-bold small text-dark"><i class="bi bi-search text-primary me-1"></i> Cari & Pilih Sparepart:</label>
+                <button type="button" class="btn btn-sm btn-outline-primary fw-semibold" id="btnAddSparepartRow">
+                  <i class="bi bi-plus-circle me-1"></i> Tambah Sparepart
+                </button>
+              </div>
+
+              <div id="sparepartContainer"></div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold small text-dark mb-1">Status Pekerjaan:</label>
+              <select id="taskStatusSelect" class="form-select">
+                <option value="PENDING">PENDING</option>
+                <option value="SELESAI">SELESAI</option>
+              </select>
+            </div>
+            <div id="addTaskAlert" class="alert mt-3 mb-0 d-none" role="alert"></div>
+          </div>
+          <div class="modal-footer bg-light px-4 py-3">
+            <button type="button" class="btn btn-light btn-sm fw-medium border" data-bs-dismiss="modal">Batal</button>
+            <button type="button" id="confirmAddTaskBtn" class="btn btn-success btn-sm fw-semibold">Tambah Pekerjaan</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Update Pekerjaan Pending -->
+    <div class="modal fade" id="updateTaskModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h6 class="modal-title fw-bold text-dark mb-0"><i class="bi bi-pencil-square me-2 text-warning"></i>Update Pekerjaan Pending</h6>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-4">
+            <input type="hidden" id="updateTaskRowIndex">
+            
+            <div class="card bg-light border p-3 mb-3">
+              <div class="fw-bold small text-secondary mb-1"><i class="bi bi-info-circle me-1"></i> Informasi Pekerjaan Awal (Pending):</div>
+              <div class="small text-dark mb-1"><strong>Pelaksana Awal:</strong> <span id="displayOldPersonName">-</span></div>
+              <div class="small text-dark"><strong>Keterangan Awal:</strong> <span id="displayOldDescription" style="white-space: pre-line;">-</span></div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold small text-dark mb-1">Nama Pelaksana Update <span class="text-danger">*</span>:</label>
+                <input type="text" id="updateTaskPersonName" class="form-control" placeholder="Contoh: I Putu Ogik Antara Putra">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold small text-dark mb-1">Shift Pelaksanaan Update <span class="text-danger">*</span>:</label>
+                <select id="updateTaskShiftSelect" class="form-select">
+                  <option value="SHIFT PAGI">SHIFT PAGI</option>
+                  <option value="SHIFT SORE">SHIFT SORE</option>
+                  <option value="SHIFT MALAM">SHIFT MALAM</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold small text-dark mb-1">Pekerjaan Update / Laporan Penyelesaian <span class="text-danger">*</span>:</label>
+              <textarea id="updateTaskDescription" class="form-control" rows="3" placeholder="Tuliskan update atau penyelesaian pekerjaan..."></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold small text-dark mb-1">Pergantian Sparepart:</label>
+              <select id="updateTaskSparepartStatus" class="form-select">
+                <option value="Tidak">Tidak</option>
+                <option value="Ya">Ya</option>
+              </select>
+            </div>
+
+            <div id="updateSparepartSelectionArea" class="d-none mb-3 p-3 border rounded-3 bg-light">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <label class="fw-bold small text-dark"><i class="bi bi-search text-primary me-1"></i> Cari & Pilih Sparepart Tambahan:</label>
+                <button type="button" class="btn btn-sm btn-outline-primary fw-semibold" id="btnUpdateAddSparepartRow">
+                  <i class="bi bi-plus-circle me-1"></i> Tambah Sparepart
+                </button>
+              </div>
+              <div id="updateSparepartContainer"></div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold small text-dark mb-1">Status Pekerjaan Baru:</label>
+              <select id="updateTaskStatusSelect" class="form-select">
+                <option value="SELESAI">SELESAI</option>
+                <option value="PENDING">PENDING (TETAP PENDING)</option>
+              </select>
+            </div>
+
+            <div id="updateTaskAlert" class="alert mt-3 mb-0 d-none" role="alert"></div>
+          </div>
+          <div class="modal-footer bg-light px-4 py-3">
+            <button type="button" class="btn btn-light btn-sm fw-medium border" data-bs-dismiss="modal">Batal</button>
+            <button type="button" id="confirmUpdateTaskBtn" class="btn btn-warning btn-sm fw-semibold text-dark">Simpan Update</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Order Barang (Beli) -->
+    <div class="modal fade" id="orderModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h6 class="modal-title fw-bold text-dark mb-0"><i class="bi bi-cart-plus me-2 text-primary"></i>Buat Order Belanja</h6>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-4">
+            <input type="hidden" id="orderItemGudang">
+            <input type="hidden" id="orderItemBarcode">
+            <div class="mb-3">
+              <label class="form-label fw-semibold small text-dark mb-1">Nama Barang:</label>
+              <input type="text" id="orderItemNama" class="form-control bg-light" readonly>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold small text-dark mb-1">Qty Order:</label>
+              <input type="number" id="orderItemQty" class="form-control" placeholder="1" min="1">
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold small text-dark mb-1">Keterangan / Alasan Pembelian:</label>
+              <textarea id="orderItemKeterangan" class="form-control" rows="3" placeholder="Contoh: Stok kritis untuk pengerjaan maintenance AC"></textarea>
+            </div>
+            <div id="orderAlert" class="alert mt-3 mb-0 d-none" role="alert"></div>
+          </div>
+          <div class="modal-footer bg-light px-4 py-3">
+            <button type="button" class="btn btn-light btn-sm fw-medium border" data-bs-dismiss="modal">Batal</button>
+            <button type="button" id="confirmOrderBtn" class="btn btn-primary btn-sm fw-semibold">Masuk List Belanja</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Input PR & PO Terpisah -->
+    <div class="modal fade" id="prPoModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h6 class="modal-title fw-bold text-dark mb-0"><i class="bi bi-file-earmark-text me-2 text-warning"></i>Proses PR & PO</h6>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-4">
+            <input type="hidden" id="prPoRowIndices">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold small text-dark mb-1">Nomor PR (Requisition):</label>
+                <input type="text" id="prNumberInput" class="form-control form-control-sm" placeholder="Contoh: PR/2026/09/001">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold small text-dark mb-1">Nomor PO (Purchase Order):</label>
+                <input type="text" id="poNumberInput" class="form-control form-control-sm" placeholder="Contoh: PO/2026/09/012">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold small text-dark mb-1">Catatan Tambahan PR/PO:</label>
+              <textarea id="prPoNotesInput" class="form-control" rows="3" placeholder="Contoh: Disetujui oleh Finance, estimasi tiba 2 hari"></textarea>
+            </div>
+            <div id="prPoAlert" class="alert mt-3 mb-0 d-none" role="alert"></div>
+          </div>
+          <div class="modal-footer bg-light px-4 py-3">
+            <button type="button" class="btn btn-light btn-sm fw-medium border" data-bs-dismiss="modal">Batal</button>
+            <button type="button" id="confirmPrPoBtn" class="btn btn-warning btn-sm fw-semibold text-dark">Simpan & Ubah Status</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Pilihan Cara Tambah Barang -->
+    <div class="modal fade" id="chooseAddModeModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h6 class="modal-title fw-bold text-dark mb-0"><i class="bi bi-plus-circle me-2 text-primary"></i>Pilih Metode Tambah Barang</h6>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-4 text-center">
+            <p class="text-muted small mb-4">Silakan pilih cara Anda ingin menambahkan data barang ke dalam gudang.</p>
+            <div class="d-grid gap-3">
+              <button type="button" class="btn btn-outline-primary py-3 fw-semibold text-start px-4 d-flex align-items-center rounded-3" id="selectManualMode">
+                <i class="bi bi-pencil-square fs-4 me-3 text-primary"></i>
+                <div>
+                  <div>Input Manual (1 Barang)</div>
+                  <span class="text-muted small fw-normal">Mengisi formulir data satuan secara langsung.</span>
+                </div>
+              </button>
+              <button type="button" class="btn btn-outline-success py-3 fw-semibold text-start px-4 d-flex align-items-center rounded-3" id="selectExcelMode">
+                <i class="bi bi-file-earmark-spreadsheet fs-4 me-3 text-success"></i>
+                <div>
+                  <div>Upload File Excel / CSV (Banyak Barang)</div>
+                  <span class="text-muted small fw-normal">Impor massal dari file .xlsx atau .csv.</span>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Form CRUD Barang Inventory (Manual) -->
+    <div class="modal fade" id="itemModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h6 class="modal-title fw-bold text-dark mb-0" id="itemModalTitle"><i class="bi bi-box-seam me-2 text-primary"></i>Tambah Barang Manual</h6>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-4">
+            <input type="hidden" id="itemRowIndex">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold small text-dark">Barcode:</label>
+                <div class="input-group input-group-sm">
+                  <input type="text" id="itemBarcode" class="form-control" placeholder="Contoh: 899123456789">
+                  <button class="btn btn-outline-secondary" type="button" id="btnScanModalBarcode"><i class="bi bi-camera"></i> Scan</button>
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold small text-dark">Nama Barang:</label>
+                <input type="text" id="itemNama" class="form-control form-control-sm" placeholder="Contoh: Pipa PVC 2 inch">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold small text-dark">Kategori:</label>
+                <input type="text" id="itemKategori" class="form-control form-control-sm" placeholder="Contoh: Plumbing">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold small text-dark">Merk:</label>
+                <input type="text" id="itemMerk" class="form-control form-control-sm" placeholder="Contoh: Rucika">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold small text-dark">Spesifikasi:</label>
+              <input type="text" id="itemSpesifikasi" class="form-control form-control-sm" placeholder="Contoh: Type D 4 meter">
+            </div>
+            <div class="row">
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-semibold small text-dark">Satuan:</label>
+                <input type="text" id="itemSatuan" class="form-control form-control-sm" placeholder="Batang / Pcs">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-semibold small text-dark">Lokasi Rak:</label>
+                <input type="text" id="itemLokasiRak" class="form-control form-control-sm" placeholder="Contoh: Rak A-02">
+              </div>
+              <div class="col-md-4 mb-3">
+                <label class="form-label fw-semibold small text-dark">Supplier:</label>
+                <input type="text" id="itemSupplier" class="form-control form-control-sm" placeholder="PT Maju Jaya">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold small text-dark">Stok Gudang:</label>
+                <input type="number" id="itemStokGudang" class="form-control form-control-sm" placeholder="0">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label fw-semibold small text-dark">Stok Minimum:</label>
+                <input type="number" id="itemStokMinimum" class="form-control form-control-sm" placeholder="0">
+              </div>
+            </div>
+            <div id="itemModalAlert" class="alert mt-3 mb-0 d-none" role="alert"></div>
+          </div>
+          <div class="modal-footer bg-light px-4 py-3">
+            <button type="button" class="btn btn-light btn-sm fw-medium border" data-bs-dismiss="modal">Batal</button>
+            <button type="button" id="saveItemBtn" class="btn btn-primary btn-sm fw-semibold">Simpan Barang</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Upload Excel / CSV -->
+    <div class="modal fade" id="uploadExcelModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h6 class="modal-title fw-bold text-dark mb-0"><i class="bi bi-file-earmark-spreadsheet me-2 text-success"></i>Upload File Excel / CSV</h6>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-4">
+            <p class="text-muted small mb-3">
+              Pastikan baris pertama file Excel Anda adalah Header dengan urutan kolom:<br>
+              <code class="text-dark small">Barcode, Nama, Kategori, Merk, Spesifikasi, Satuan, Lokasi Rak, Stok, Stok Min, Supplier</code>
+            </p>
+            <div class="mb-3">
+              <label for="excelFile" class="form-label fw-semibold small text-dark">Pilih File (.xlsx / .csv):</label>
+              <input type="file" id="excelFile" class="form-control" accept=".csv, .xlsx, .xls">
+            </div>
+            <div id="uploadExcelAlert" class="alert mt-3 mb-0 d-none" role="alert"></div>
+          </div>
+          <div class="modal-footer bg-light px-4 py-3">
+            <button type="button" class="btn btn-light btn-sm fw-medium border" data-bs-dismiss="modal">Batal</button>
+            <button type="button" id="confirmUploadExcelBtn" class="btn btn-success btn-sm fw-semibold">Upload & Impor</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Tambah Gudang Baru -->
+    <div class="modal fade" id="addGudangModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h6 class="modal-title fw-bold text-dark mb-0"><i class="bi bi-box-seam me-2 text-primary"></i>Tambah Gudang Baru</h6>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-4">
+            <div class="mb-3">
+              <label for="gudangNameInput" class="form-label fw-semibold small text-dark">Nama Gudang:</label>
+              <div class="input-group">
+                <span class="input-group-text bg-light text-muted fw-semibold">G.</span>
+                <input type="text" id="gudangNameInput" class="form-control" placeholder="Contoh: HVAC, Electrical, Plumbing">
+              </div>
+              <span class="form-text text-muted small">Sistem otomatis menambahkan prefiks <strong>G.</strong> pada sheet Google Sheet.</span>
+            </div>
+            <div id="addGudangAlert" class="alert mt-3 mb-0 d-none" role="alert"></div>
+          </div>
+          <div class="modal-footer bg-light px-4 py-3">
+            <button type="button" class="btn btn-light btn-sm fw-medium border" data-bs-dismiss="modal">Batal</button>
+            <button type="button" id="confirmAddGudangBtn" class="btn btn-primary btn-sm fw-semibold">Buat Gudang Sheet</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Preview & Tanda Tangan PDF -->
+    <div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <div>
+              <h6 class="modal-title fw-bold text-dark mb-0" id="previewModalLabel">Preview Dokumen</h6>
+              <span class="text-muted small">Tanda tangani, ubah ukuran, dan atur posisi tanda tangan di atas PDF</span>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-4">
+            <div class="row g-4">
+              <div class="col-lg-4">
+                <div class="card-custom p-3 mb-3">
+                  <label class="form-label fw-semibold small text-dark mb-2"><i class="bi bi-pencil-square me-1"></i> 1. Gambar Tanda Tangan</label>
+                  <div class="text-center">
+                    <canvas id="signature-pad" width="380" height="170"></canvas>
+                  </div>
+                  
+                  <div class="mt-3">
+                    <label for="signerName" class="form-label fw-semibold small text-dark mb-1">Nama Penandatangan:</label>
+                    <input type="text" id="signerName" class="form-control form-control-sm" placeholder="Contoh: Mohamad Olfat Zakaria">
+                  </div>
+
+                  <div class="d-flex justify-content-between mt-3 gap-2">
+                    <button id="clearPadBtn" class="btn btn-light btn-sm fw-medium border w-50">Bersihkan</button>
+                    <button id="applySigBtn" class="btn btn-primary btn-sm fw-medium w-50">Terapkan</button>
+                  </div>
+                </div>
+
+                <div class="card-custom p-3">
+                  <button id="saveBtn" class="btn btn-success btn-lg w-100 fw-semibold fs-6 shadow-sm">
+                    <i class="bi bi-check-circle me-1"></i> Simpan PDF ke Drive
+                  </button>
+                  <div id="statusAlert" class="alert mt-3 mb-0 d-none" role="alert"></div>
+                </div>
+              </div>
+
+              <div class="col-lg-8">
+                <div class="card-custom p-3">
+                  <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                    <span class="small fw-semibold text-muted"><i class="bi bi-arrows-move me-1"></i> Geser & tarik sudut kanan bawah TTD untuk atur ukuran</span>
+                    
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                      <div class="btn-group me-2" role="group">
+                        <button id="zoomOutBtn" class="btn btn-sm btn-outline-secondary px-2" title="Zoom Out"><i class="bi bi-zoom-out"></i></button>
+                        <button id="zoomResetBtn" class="btn btn-sm btn-outline-secondary px-2 text-nowrap" title="Reset Zoom"><span id="zoomLevelText" class="small fw-semibold">100%</span></button>
+                        <button id="zoomInBtn" class="btn btn-sm btn-outline-secondary px-2" title="Zoom In"><i class="bi bi-zoom-in"></i></button>
+                      </div>
+
+                      <div class="d-flex align-items-center gap-1">
+                        <button id="prevPage" class="btn btn-sm btn-outline-secondary px-2" disabled><i class="bi bi-chevron-left"></i></button>
+                        <span id="pageNumDisplay" class="small fw-medium mx-1 text-nowrap">Hal 0 / 0</span>
+                        <button id="nextPage" class="btn btn-sm btn-outline-secondary px-2" disabled><i class="bi bi-chevron-right"></i></button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div id="pdf-container">
+                    <div id="pdf-render-wrapper">
+                      <canvas id="pdf-canvas"></canvas>
+                      <div id="dragSignature" class="draggable-signature">
+                        <img id="sigImagePreview" src="" alt="Signature">
+                        <div id="resizeHandle" class="resize-handle"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // =========================================================================
+      // KONFIGURASI BACKEND GAS API (GITHUB PAGES INTEGRATION)
+      // =========================================================================
+      // UBAH DUA KONTANTA DI BAWAH SESUAI DEPLOYMENT APPS SCRIPT ANDA
+      const GAS_API_URL = "https://script.google.com/macros/s/AKfycbx.../exec"; // Ganti dengan Web App URL dari GAS
+      const API_SECRET_KEY = "SECRET_API_KEY_WEBAPP_2026"; // Wajib sama dengan API_SECRET_KEY di Code.gs
+
+      /**
+       * Pembungkus API pengganti google.script.run
+       */
+      async function callBackendApi(action, payload = {}) {
+        try {
+          const response = await fetch(GAS_API_URL, {
+            method: "POST",
+            mode: "cors",
+            headers: {
+              "Content-Type": "text/plain;charset=utf-8"
+            },
+            body: JSON.stringify({
+              apiKey: API_SECRET_KEY,
+              action: action,
+              payload: payload
+            })
+          });
+
+          const result = await response.json();
+          return result;
+        } catch (error) {
+          console.error("Gagal terhubung ke Backend GAS:", error);
+          return { success: false, message: "Gagal terhubung ke backend server: " + error.message };
+        }
+      }
+
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+
+      let currentSelectedFolderId = null;
+      let activeFileId = null;
+      let activeFileName = '';
+      let cachedPdfFiles = [];
+      let activeStatusFilter = 'all';
+
+      let activeGudangSheetName = null;
+      let isLowStockMode = false;
+      let cachedInventoryItems = [];
+      let cachedShoppingListItems = [];
+      let activeShoppingStatusFilter = 'all';
+
+      let currentActiveShift = 'SHIFT PAGI';
+      let cachedDailyTasks = [];
+      let cachedGudangSubmenus = [];
+
+      const chooseAddModeModal = new bootstrap.Modal(document.getElementById('chooseAddModeModal'));
+      const itemModal = new bootstrap.Modal(document.getElementById('itemModal'));
+      const uploadExcelModal = new bootstrap.Modal(document.getElementById('uploadExcelModal'));
+      const orderModal = new bootstrap.Modal(document.getElementById('orderModal'));
+      const prPoModal = new bootstrap.Modal(document.getElementById('prPoModal'));
+      const addTaskModal = new bootstrap.Modal(document.getElementById('addTaskModal'));
+      const updateTaskModal = new bootstrap.Modal(document.getElementById('updateTaskModal'));
+
+      // LOGIKA TANGGAL OPERASIONAL OTOMATIS
+      function getAutoOperationalDate() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      }
+
+      function updateAutoDateUI() {
+        const autoDate = getAutoOperationalDate();
+        document.getElementById('dailyReportDatePicker').value = autoDate;
+        
+        const d = new Date();
+        const options = { day: '2-digit', month: 'long', year: 'numeric' };
+        document.getElementById('displayAutoDate').textContent = d.toLocaleDateString('id-ID', options);
+      }
+
+      function populateOperationalDateDropdown() {
+        const selectEl = document.getElementById('taskOperationalDateSelect');
+        selectEl.innerHTML = '';
+
+        const today = new Date();
+        const yesterday = new Date();
+        yesterday.setDate(today.getDate() - 1);
+
+        const formatYMD = (d) => {
+          const y = d.getFullYear();
+          const m = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          return `${y}-${m}-${day}`;
+        };
+
+        const formatIndo = (d) => {
+          return d.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+        };
+
+        const optToday = document.createElement('option');
+        optToday.value = formatYMD(today);
+        optToday.textContent = `Hari Ini (${formatIndo(today)})`;
+
+        const optYesterday = document.createElement('option');
+        optYesterday.value = formatYMD(yesterday);
+        optYesterday.textContent = `Kemarin / Shift Malam Dini Hari (${formatIndo(yesterday)})`;
+
+        selectEl.appendChild(optToday);
+        selectEl.appendChild(optYesterday);
+      }
+
+      // REGISTRASI PWA PROMPT BANNER
+      let deferredPrompt;
+      const pwaBanner = document.getElementById('pwaInstallBanner');
+
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        pwaBanner.style.display = 'block';
+      });
+
+      document.getElementById('btnInstallPwa').addEventListener('click', () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          deferredPrompt.userChoice.then((choiceResult) => {
+            if (choiceResult.outcome === 'accepted') {
+              pwaBanner.style.display = 'none';
+            }
+            deferredPrompt = null;
+          });
+        }
+      });
+
+      document.getElementById('closePwaBannerBtn').addEventListener('click', () => {
+        pwaBanner.style.display = 'none';
+      });
+
+      // LOGIKA DASHBOARD METRICS
+      async function loadDashboardStats() {
+        const res = await callBackendApi("getDashboardStats");
+        if (res.success && res.stats) {
+          document.getElementById('statTodayDone').textContent = res.stats.todayDone || 0;
+          document.getElementById('statTotalPending').textContent = res.stats.totalPending || 0;
+          document.getElementById('statTotalLowStock').textContent = res.stats.totalLowStock || 0;
+          document.getElementById('statOrderInProgress').textContent = res.stats.inProgressOrderCount || 0;
+        }
+      }
+
+      // LOGIKA CAMERA SCANNER BARCODE
+      let html5QrcodeScanner = null;
+      let activeScanTargetInputId = null;
+      const cameraModal = new bootstrap.Modal(document.getElementById('cameraScannerModal'));
+
+      function startCameraScanner(targetInputId) {
+        activeScanTargetInputId = targetInputId;
+        cameraModal.show();
+
+        setTimeout(() => {
+          if (!html5QrcodeScanner) {
+            html5QrcodeScanner = new Html5Qrcode("reader");
+          }
+          
+          html5QrcodeScanner.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: { width: 250, height: 150 } },
+            (decodedText) => {
+              if (activeScanTargetInputId) {
+                document.getElementById(activeScanTargetInputId).value = decodedText;
+                if (activeScanTargetInputId === 'inventorySearchInput') {
+                  applyInventoryFilter();
+                }
+              }
+              stopCameraScanner();
+              cameraModal.hide();
+            },
+            (errorMessage) => { }
+          ).catch(err => {
+            alert("Gagal membuka kamera: " + err);
+          });
+        }, 400);
+      }
+
+      function stopCameraScanner() {
+        if (html5QrcodeScanner && html5QrcodeScanner.isScanning) {
+          html5QrcodeScanner.stop().then(() => {
+            console.log("Camera stopped");
+          });
+        }
+      }
+
+      document.getElementById('btnScanSearchBarcode').addEventListener('click', () => {
+        startCameraScanner('inventorySearchInput');
+      });
+
+      document.getElementById('btnScanModalBarcode').addEventListener('click', () => {
+        startCameraScanner('itemBarcode');
+      });
+
+      document.getElementById('closeCameraModalBtn').addEventListener('click', stopCameraScanner);
+
+      // Mobile Sidebar Toggle
+      const sidebar = document.getElementById('sidebar');
+      const sidebarOverlay = document.getElementById('sidebarOverlay');
+      const mobileSidebarToggle = document.getElementById('mobileSidebarToggle');
+      const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
+
+      function toggleMobileSidebar() {
+        sidebar.classList.toggle('show-mobile');
+        sidebarOverlay.classList.toggle('show-mobile');
+      }
+
+      mobileSidebarToggle.addEventListener('click', toggleMobileSidebar);
+      sidebarCloseBtn.addEventListener('click', toggleMobileSidebar);
+      sidebarOverlay.addEventListener('click', toggleMobileSidebar);
+
+      document.querySelectorAll('.nav-item-link').forEach(item => {
+        item.addEventListener('click', function(e) {
+          e.preventDefault();
+          document.querySelectorAll('.nav-item-link').forEach(el => el.classList.remove('active'));
+          this.classList.add('active');
+
+          const target = this.getAttribute('data-target');
+          document.querySelectorAll('.content-section').forEach(sec => sec.classList.add('d-none'));
+          document.getElementById(target).classList.remove('d-none');
+
+          if (target === 'home-section') {
+            loadDashboardStats();
+          }
+
+          if (window.innerWidth < 992) {
+            sidebar.classList.remove('show-mobile');
+            sidebarOverlay.classList.remove('show-mobile');
+          }
+        });
+      });
+
+      document.getElementById('dailyWorkMenuLink').addEventListener('click', function(e) {
+        e.preventDefault();
+        document.querySelectorAll('.content-section').forEach(sec => sec.classList.add('d-none'));
+        document.getElementById('daily-work-section').classList.remove('d-none');
+        loadDailyTasks();
+
+        if (window.innerWidth < 992) {
+          sidebar.classList.remove('show-mobile');
+          sidebarOverlay.classList.remove('show-mobile');
+        }
+      });
+
+      const shiftButtons = [
+        { btn: 'btnShiftPagi', title: 'SHIFT PAGI' },
+        { btn: 'btnShiftSore', title: 'SHIFT SORE' },
+        { btn: 'btnShiftMalam', title: 'SHIFT MALAM' },
+        { btn: 'btnShiftPending', title: 'SHIFT PENDING' }
+      ];
+
+      shiftButtons.forEach(item => {
+        document.getElementById(item.btn).addEventListener('click', function() {
+          shiftButtons.forEach(i => document.getElementById(i.btn).classList.remove('active'));
+          this.classList.add('active');
+          currentActiveShift = item.title;
+          document.getElementById('shiftTitleDisplay').textContent = item.title;
+          renderDailyTasks();
+        });
+      });
+
+      async function loadDailyTasks() {
+        const dateVal = document.getElementById('dailyReportDatePicker').value;
+        const taskContainer = document.getElementById('taskListContainer');
+        taskContainer.innerHTML = '<div class="text-center py-5 text-muted"><div class="spinner-border text-primary spinner-border-sm me-2"></div>Memuat daftar pekerjaan...</div>';
+
+        const res = await callBackendApi("getDailyTasks", { dateStr: dateVal });
+        if (res.success) {
+          cachedDailyTasks = res.tasks;
+          document.getElementById('countPagi').textContent = res.counts.pagi || 0;
+          document.getElementById('countSore').textContent = res.counts.sore || 0;
+          document.getElementById('countMalam').textContent = res.counts.malam || 0;
+          document.getElementById('countPending').textContent = res.counts.pending || 0;
+
+          renderDailyTasks();
+        } else {
+          taskContainer.innerHTML = `<div class="alert alert-danger">${res.message}</div>`;
+        }
+      }
+
+      function renderDailyTasks() {
+        const taskContainer = document.getElementById('taskListContainer');
+        taskContainer.innerHTML = '';
+
+        let filtered = [];
+        if (currentActiveShift === 'SHIFT PENDING') {
+          filtered = cachedDailyTasks.filter(t => t.taskStatus === 'PENDING');
+        } else {
+          filtered = cachedDailyTasks.filter(t => t.shift === currentActiveShift && t.taskStatus !== 'PENDING');
+        }
+
+        if (filtered.length === 0) {
+          taskContainer.innerHTML = `
+            <div class="text-center py-5 text-muted card-custom p-4">
+              <i class="bi bi-clipboard-x display-6 mb-2 d-block opacity-50"></i>
+              Belum ada data pekerjaan pada <strong>${currentActiveShift}</strong>.
+            </div>`;
+          return;
+        }
+
+        filtered.forEach(task => {
+          const isPending = task.taskStatus === 'PENDING';
+          const cardClass = isPending ? '' : 'status-selesai';
+          
+          let pendingBadgeHtml = '';
+          if (isPending) {
+            pendingBadgeHtml = `
+              <div class="badge-task-pending mb-2 d-inline-block">
+                <i class="bi bi-clock-history me-1"></i> Dipending Selama: <strong>${task.pendingDuration}</strong>
+              </div>`;
+          }
+
+          const badgeHtml = isPending 
+            ? `<span class="badge-task-pending"><i class="bi bi-clock-fill me-1"></i> PENDING</span>`
+            : `<span class="badge-task-selesai"><i class="bi bi-check-circle-fill me-1"></i> SELESAI</span>`;
+
+          let detailSpHtml = '';
+          if (task.sparepartDetail && task.sparepartDetail !== '-') {
+            detailSpHtml = `<div class="text-primary small fw-semibold mt-1"><i class="bi bi-box-seam me-1"></i>Item: ${task.sparepartDetail}</div>`;
+          }
+
+          const updateBtnHtml = isPending
+            ? `<button class="btn btn-sm btn-warning text-dark fw-semibold btn-update-daily-task me-2 py-1 px-3" data-index="${task.rowIndex}">
+                <i class="bi bi-pencil-square me-1"></i> Update Pekerjaan
+               </button>`
+            : '';
+
+          const card = document.createElement('div');
+          card.className = `card-task-item ${cardClass}`;
+          card.innerHTML = `
+            <div class="d-flex justify-content-between align-items-start gap-3 mb-2">
+              <div class="fw-bold text-dark fs-6 d-flex align-items-center gap-2">
+                <i class="bi bi-person-fill text-secondary"></i> ${task.personName}
+              </div>
+              ${badgeHtml}
+            </div>
+            
+            ${pendingBadgeHtml}
+
+            <p class="text-dark mb-2 fw-medium" style="font-size: 0.95rem; line-height: 1.5; white-space: pre-line;">
+              ${task.description}
+            </p>
+
+            <div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mt-3">
+              <div class="text-muted small">
+                <div class="mb-1"><i class="bi bi-calendar-check me-1"></i>Dibuat Tgl: <strong>${task.createdAt}</strong></div>
+                <div><i class="bi bi-wrench-adjustable me-1"></i>${task.sparepartStatus}</div>
+                ${detailSpHtml}
+              </div>
+              <div class="d-flex align-items-center">
+                ${updateBtnHtml}
+                <button class="btn-delete-task btn-delete-daily-task" data-index="${task.rowIndex}" title="Hapus Pekerjaan">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </div>
+          `;
+          taskContainer.appendChild(card);
+        });
+
+        document.querySelectorAll('.btn-delete-daily-task').forEach(btn => {
+          btn.addEventListener('click', async function() {
+            const index = parseInt(this.getAttribute('data-index'));
+            if (confirm('Apakah Anda yakin ingin menghapus catatan pekerjaan ini?')) {
+              const res = await callBackendApi("deleteDailyTask", { rowIndex: index });
+              if (res.success) {
+                loadDailyTasks();
+              } else {
+                alert('Gagal menghapus: ' + res.message);
+              }
+            }
+          });
+        });
+
+        document.querySelectorAll('.btn-update-daily-task').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const index = parseInt(this.getAttribute('data-index'));
+            const task = cachedDailyTasks.find(t => t.rowIndex === index);
+
+            if (task) {
+              document.getElementById('updateTaskRowIndex').value = index;
+              document.getElementById('displayOldPersonName').textContent = task.personName || '-';
+              document.getElementById('displayOldDescription').textContent = task.description || '-';
+
+              document.getElementById('updateTaskPersonName').value = '';
+              document.getElementById('updateTaskDescription').value = '';
+              document.getElementById('updateTaskShiftSelect').value = 'SHIFT PAGI';
+              document.getElementById('updateTaskSparepartStatus').value = 'Tidak';
+              document.getElementById('updateTaskStatusSelect').value = 'SELESAI';
+              
+              document.getElementById('updateSparepartSelectionArea').classList.add('d-none');
+              document.getElementById('updateSparepartContainer').innerHTML = '';
+              document.getElementById('updateTaskAlert').classList.add('d-none');
+              
+              updateTaskModal.show();
+            }
+          });
+        });
+      }
+
+      // LOGIKA SEARCH ENGINE SPAREPART (TAMBAH PEKERJAAN)
+      document.getElementById('taskSparepartStatus').addEventListener('change', function() {
+        const area = document.getElementById('sparepartSelectionArea');
+        if (this.value === 'Ya') {
+          area.classList.remove('d-none');
+          if (document.getElementById('sparepartContainer').children.length === 0) {
+            addSparepartRow();
+          }
+        } else {
+          area.classList.add('d-none');
+        }
+      });
+
+      document.getElementById('btnAddSparepartRow').addEventListener('click', function() {
+        addSparepartRow();
+      });
+
+      function addSparepartRow() {
+        const container = document.getElementById('sparepartContainer');
+        const rowId = 'spRow_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+
+        let gudangOptions = '<option value="">-- Pilih Gudang --</option>';
+        cachedGudangSubmenus.forEach(g => {
+          gudangOptions += `<option value="${g.sheetName}">${g.displayName}</option>`;
+        });
+
+        const div = document.createElement('div');
+        div.className = 'sparepart-row-item';
+        div.id = rowId;
+        div.innerHTML = `
+          <div class="row g-2 align-items-center">
+            <div class="col-md-3">
+              <label class="form-label mb-1 small fw-semibold">Gudang:</label>
+              <select class="form-select form-select-sm sp-gudang-select">
+                ${gudangOptions}
+              </select>
+            </div>
+            <div class="col-md-6 sp-search-container">
+              <label class="form-label mb-1 small fw-semibold">Cari Barang (Kode / Nama):</label>
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                <input type="text" class="form-control sp-search-input" placeholder="Ketik kode barcode atau nama barang..." disabled>
+              </div>
+              <input type="hidden" class="sp-selected-nama">
+              <input type="hidden" class="sp-selected-barcode">
+              <div class="sp-search-results"></div>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label mb-1 small fw-semibold">Qty:</label>
+              <input type="number" class="form-control form-control-sm sp-qty-input" value="1" min="1">
+            </div>
+            <div class="col-md-1 text-end pt-3">
+              <button type="button" class="btn btn-sm btn-outline-danger btn-remove-sp-row" title="Hapus Barang"><i class="bi bi-x-lg"></i></button>
+            </div>
+          </div>
+        `;
+
+        container.appendChild(div);
+
+        const gudangSelect = div.querySelector('.sp-gudang-select');
+        const searchInput = div.querySelector('.sp-search-input');
+        const resultsBox = div.querySelector('.sp-search-results');
+        const selectedNamaInput = div.querySelector('.sp-selected-nama');
+        const selectedBarcodeInput = div.querySelector('.sp-selected-barcode');
+        const removeBtn = div.querySelector('.btn-remove-sp-row');
+
+        let localGudangItems = [];
+
+        gudangSelect.addEventListener('change', async function() {
+          const sheetName = this.value;
+          selectedNamaInput.value = '';
+          selectedBarcodeInput.value = '';
+          searchInput.value = '';
+          resultsBox.style.display = 'none';
+
+          if (!sheetName) {
+            searchInput.placeholder = 'Pilih gudang dulu...';
+            searchInput.disabled = true;
+            localGudangItems = [];
+            return;
+          }
+
+          searchInput.placeholder = 'Memuat barang gudang...';
+          searchInput.disabled = true;
+
+          const res = await callBackendApi("getGudangItems", { sheetName: sheetName });
+          if (res.success && res.items.length > 0) {
+            localGudangItems = res.items;
+            searchInput.placeholder = 'Ketik kode barcode atau nama barang...';
+            searchInput.disabled = false;
+          } else {
+            localGudangItems = [];
+            searchInput.placeholder = 'Tidak ada barang di gudang ini';
+            searchInput.disabled = true;
+          }
+        });
+
+        searchInput.addEventListener('input', function() {
+          const query = this.value.toLowerCase().trim();
+          selectedNamaInput.value = '';
+          selectedBarcodeInput.value = '';
+
+          if (!query) {
+            resultsBox.style.display = 'none';
+            return;
+          }
+
+          const filtered = localGudangItems.filter(item => {
+            const bCode = (item.barcode || '').toString().toLowerCase();
+            const bNama = (item.nama || '').toString().toLowerCase();
+            return bCode.includes(query) || bNama.includes(query);
+          });
+
+          if (filtered.length === 0) {
+            resultsBox.innerHTML = '<div class="sp-search-item text-muted">Barang tidak ditemukan</div>';
+            resultsBox.style.display = 'block';
+            return;
+          }
+
+          let html = '';
+          filtered.forEach(it => {
+            const bCodeStr = it.barcode ? `[${it.barcode}] ` : '';
+            html += `<div class="sp-search-item" data-nama="${it.nama}" data-barcode="${it.barcode || ''}">
+              <strong>${bCodeStr}${it.nama}</strong> <span class="text-muted ms-1">(Stok: ${it.stokGudang})</span>
+            </div>`;
+          });
+
+          resultsBox.innerHTML = html;
+          resultsBox.style.display = 'block';
+
+          resultsBox.querySelectorAll('.sp-search-item').forEach(el => {
+            el.addEventListener('click', function() {
+              const itemNama = this.getAttribute('data-nama');
+              const itemBarcode = this.getAttribute('data-barcode');
+
+              if (itemNama) {
+                selectedNamaInput.value = itemNama;
+                selectedBarcodeInput.value = itemBarcode;
+                const bCodeStr = itemBarcode ? `[${itemBarcode}] ` : '';
+                searchInput.value = `${bCodeStr}${itemNama}`;
+                resultsBox.style.display = 'none';
+              }
+            });
+          });
+        });
+
+        document.addEventListener('click', function(e) {
+          if (!div.contains(e.target)) {
+            resultsBox.style.display = 'none';
+          }
+        });
+
+        removeBtn.addEventListener('click', function() {
+          div.remove();
+        });
+      }
+
+      // LOGIKA SEARCH ENGINE SPAREPART (UPDATE PEKERJAAN PENDING)
+      document.getElementById('updateTaskSparepartStatus').addEventListener('change', function() {
+        const area = document.getElementById('updateSparepartSelectionArea');
+        if (this.value === 'Ya') {
+          area.classList.remove('d-none');
+          if (document.getElementById('updateSparepartContainer').children.length === 0) {
+            addUpdateSparepartRow();
+          }
+        } else {
+          area.classList.add('d-none');
+        }
+      });
+
+      document.getElementById('btnUpdateAddSparepartRow').addEventListener('click', function() {
+        addUpdateSparepartRow();
+      });
+
+      function addUpdateSparepartRow() {
+        const container = document.getElementById('updateSparepartContainer');
+        const rowId = 'spUpdateRow_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
+
+        let gudangOptions = '<option value="">-- Pilih Gudang --</option>';
+        cachedGudangSubmenus.forEach(g => {
+          gudangOptions += `<option value="${g.sheetName}">${g.displayName}</option>`;
+        });
+
+        const div = document.createElement('div');
+        div.className = 'sparepart-row-item';
+        div.id = rowId;
+        div.innerHTML = `
+          <div class="row g-2 align-items-center">
+            <div class="col-md-3">
+              <label class="form-label mb-1 small fw-semibold">Gudang:</label>
+              <select class="form-select form-select-sm sp-gudang-select">
+                ${gudangOptions}
+              </select>
+            </div>
+            <div class="col-md-6 sp-search-container">
+              <label class="form-label mb-1 small fw-semibold">Cari Barang (Kode / Nama):</label>
+              <div class="input-group input-group-sm">
+                <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+                <input type="text" class="form-control sp-search-input" placeholder="Ketik kode barcode atau nama barang..." disabled>
+              </div>
+              <input type="hidden" class="sp-selected-nama">
+              <input type="hidden" class="sp-selected-barcode">
+              <div class="sp-search-results"></div>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label mb-1 small fw-semibold">Qty:</label>
+              <input type="number" class="form-control form-control-sm sp-qty-input" value="1" min="1">
+            </div>
+            <div class="col-md-1 text-end pt-3">
+              <button type="button" class="btn btn-sm btn-outline-danger btn-remove-sp-row" title="Hapus Barang"><i class="bi bi-x-lg"></i></button>
+            </div>
+          </div>
+        `;
+
+        container.appendChild(div);
+
+        const gudangSelect = div.querySelector('.sp-gudang-select');
+        const searchInput = div.querySelector('.sp-search-input');
+        const resultsBox = div.querySelector('.sp-search-results');
+        const selectedNamaInput = div.querySelector('.sp-selected-nama');
+        const selectedBarcodeInput = div.querySelector('.sp-selected-barcode');
+        const removeBtn = div.querySelector('.btn-remove-sp-row');
+
+        let localGudangItems = [];
+
+        gudangSelect.addEventListener('change', async function() {
+          const sheetName = this.value;
+          selectedNamaInput.value = '';
+          selectedBarcodeInput.value = '';
+          searchInput.value = '';
+          resultsBox.style.display = 'none';
+
+          if (!sheetName) {
+            searchInput.placeholder = 'Pilih gudang dulu...';
+            searchInput.disabled = true;
+            localGudangItems = [];
+            return;
+          }
+
+          searchInput.placeholder = 'Memuat barang gudang...';
+          searchInput.disabled = true;
+
+          const res = await callBackendApi("getGudangItems", { sheetName: sheetName });
+          if (res.success && res.items.length > 0) {
+            localGudangItems = res.items;
+            searchInput.placeholder = 'Ketik kode barcode atau nama barang...';
+            searchInput.disabled = false;
+          } else {
+            localGudangItems = [];
+            searchInput.placeholder = 'Tidak ada barang di gudang ini';
+            searchInput.disabled = true;
+          }
+        });
+
+        searchInput.addEventListener('input', function() {
+          const query = this.value.toLowerCase().trim();
+          selectedNamaInput.value = '';
+          selectedBarcodeInput.value = '';
+
+          if (!query) {
+            resultsBox.style.display = 'none';
+            return;
+          }
+
+          const filtered = localGudangItems.filter(item => {
+            const bCode = (item.barcode || '').toString().toLowerCase();
+            const bNama = (item.nama || '').toString().toLowerCase();
+            return bCode.includes(query) || bNama.includes(query);
+          });
+
+          if (filtered.length === 0) {
+            resultsBox.innerHTML = '<div class="sp-search-item text-muted">Barang tidak ditemukan</div>';
+            resultsBox.style.display = 'block';
+            return;
+          }
+
+          let html = '';
+          filtered.forEach(it => {
+            const bCodeStr = it.barcode ? `[${it.barcode}] ` : '';
+            html += `<div class="sp-search-item" data-nama="${it.nama}" data-barcode="${it.barcode || ''}">
+              <strong>${bCodeStr}${it.nama}</strong> <span class="text-muted ms-1">(Stok: ${it.stokGudang})</span>
+            </div>`;
+          });
+
+          resultsBox.innerHTML = html;
+          resultsBox.style.display = 'block';
+
+          resultsBox.querySelectorAll('.sp-search-item').forEach(el => {
+            el.addEventListener('click', function() {
+              const itemNama = this.getAttribute('data-nama');
+              const itemBarcode = this.getAttribute('data-barcode');
+
+              if (itemNama) {
+                selectedNamaInput.value = itemNama;
+                selectedBarcodeInput.value = itemBarcode;
+                const bCodeStr = itemBarcode ? `[${itemBarcode}] ` : '';
+                searchInput.value = `${bCodeStr}${itemNama}`;
+                resultsBox.style.display = 'none';
+              }
+            });
+          });
+        });
+
+        document.addEventListener('click', function(e) {
+          if (!div.contains(e.target)) {
+            resultsBox.style.display = 'none';
+          }
+        });
+
+        removeBtn.addEventListener('click', function() {
+          div.remove();
+        });
+      }
+
+      document.getElementById('btnOpenAddTaskModal').addEventListener('click', function() {
+        populateOperationalDateDropdown();
+        
+        if (currentActiveShift === 'SHIFT MALAM') {
+          document.getElementById('taskOperationalDateSelect').selectedIndex = 1;
+        } else {
+          document.getElementById('taskOperationalDateSelect').selectedIndex = 0;
+        }
+
+        document.getElementById('taskPersonName').value = '';
+        document.getElementById('taskDescription').value = '';
+        document.getElementById('taskSparepartStatus').value = 'Tidak';
+        document.getElementById('sparepartSelectionArea').classList.add('d-none');
+        document.getElementById('sparepartContainer').innerHTML = '';
+        document.getElementById('addTaskAlert').classList.add('d-none');
+        addTaskModal.show();
+      });
+
+      document.getElementById('confirmAddTaskBtn').addEventListener('click', async function() {
+        const spStatus = document.getElementById('taskSparepartStatus').value;
+        const sparepartItems = [];
+
+        if (spStatus === 'Ya') {
+          const rows = document.querySelectorAll('#sparepartContainer .sparepart-row-item');
+          let isValid = true;
+
+          rows.forEach(r => {
+            const gVal = r.querySelector('.sp-gudang-select').value;
+            const namaVal = r.querySelector('.sp-selected-nama').value;
+            const barcodeVal = r.querySelector('.sp-selected-barcode').value;
+            const qVal = parseFloat(r.querySelector('.sp-qty-input').value) || 0;
+
+            if (!gVal || !namaVal || qVal <= 0) {
+              isValid = false;
+            } else {
+              sparepartItems.push({
+                gudangSheet: gVal,
+                nama: namaVal,
+                barcode: barcodeVal,
+                qty: qVal
+              });
+            }
+          });
+
+          if (!isValid || sparepartItems.length === 0) {
+            const alertBox = document.getElementById('addTaskAlert');
+            alertBox.className = 'alert alert-danger mt-3 mb-0 small';
+            alertBox.textContent = 'Harap pilih gudang, cari/pilih barang, dan isi kuantitas (Qty) dengan benar.';
+            alertBox.classList.remove('d-none');
+            return;
+          }
+        }
+
+        const selectedOpDate = document.getElementById('taskOperationalDateSelect').value;
+
+        const taskData = {
+          reportDate: selectedOpDate,
+          shift: currentActiveShift === 'SHIFT PENDING' ? 'SHIFT PAGI' : currentActiveShift,
+          personName: document.getElementById('taskPersonName').value.trim(),
+          description: document.getElementById('taskDescription').value.trim(),
+          sparepartStatus: spStatus,
+          spareparts: sparepartItems,
+          taskStatus: document.getElementById('taskStatusSelect').value
+        };
+
+        const alertBox = document.getElementById('addTaskAlert');
+
+        if (!taskData.personName || !taskData.description) {
+          alertBox.className = 'alert alert-danger mt-3 mb-0 small';
+          alertBox.textContent = 'Harap isi nama personel dan deskripsi pekerjaan.';
+          alertBox.classList.remove('d-none');
+          return;
+        }
+
+        alertBox.className = 'alert alert-info mt-3 mb-0 small';
+        alertBox.textContent = 'Menyimpan pekerjaan & memotong stok gudang...';
+        alertBox.classList.remove('d-none');
+
+        const res = await callBackendApi("addDailyTask", { taskData: taskData });
+        if (res.success) {
+          alertBox.className = 'alert alert-success mt-3 mb-0 small';
+          alertBox.textContent = res.message;
+          setTimeout(() => {
+            addTaskModal.hide();
+            loadDailyTasks();
+          }, 1000);
+        } else {
+          alertBox.className = 'alert alert-danger mt-3 mb-0 small';
+          alertBox.textContent = res.message;
+        }
+      });
+
+      document.getElementById('confirmUpdateTaskBtn').addEventListener('click', async function() {
+        const rowIndex = document.getElementById('updateTaskRowIndex').value;
+        const spStatus = document.getElementById('updateTaskSparepartStatus').value;
+        const sparepartItems = [];
+
+        if (spStatus === 'Ya') {
+          const rows = document.querySelectorAll('#updateSparepartContainer .sparepart-row-item');
+          let isValid = true;
+
+          rows.forEach(r => {
+            const gVal = r.querySelector('.sp-gudang-select').value;
+            const namaVal = r.querySelector('.sp-selected-nama').value;
+            const barcodeVal = r.querySelector('.sp-selected-barcode').value;
+            const qVal = parseFloat(r.querySelector('.sp-qty-input').value) || 0;
+
+            if (!gVal || !namaVal || qVal <= 0) {
+              isValid = false;
+            } else {
+              sparepartItems.push({
+                gudangSheet: gVal,
+                nama: namaVal,
+                barcode: barcodeVal,
+                qty: qVal
+              });
+            }
+          });
+
+          if (!isValid || sparepartItems.length === 0) {
+            const alertBox = document.getElementById('updateTaskAlert');
+            alertBox.className = 'alert alert-danger mt-3 mb-0 small';
+            alertBox.textContent = 'Harap pilih gudang, cari/pilih barang, dan isi kuantitas (Qty) dengan benar.';
+            alertBox.classList.remove('d-none');
+            return;
+          }
+        }
+
+        const updateData = {
+          rowIndex: parseInt(rowIndex),
+          reportDate: document.getElementById('dailyReportDatePicker').value,
+          description: document.getElementById('updateTaskDescription').value.trim(),
+          personName: document.getElementById('updateTaskPersonName').value.trim(),
+          shift: document.getElementById('updateTaskShiftSelect').value,
+          sparepartStatus: spStatus,
+          spareparts: sparepartItems,
+          taskStatus: document.getElementById('updateTaskStatusSelect').value
+        };
+
+        const alertBox = document.getElementById('updateTaskAlert');
+
+        if (!updateData.description || !updateData.personName) {
+          alertBox.className = 'alert alert-danger mt-3 mb-0 small';
+          alertBox.textContent = 'Harap isi deskripsi pekerjaan dan nama personel yang melaksanakan.';
+          alertBox.classList.remove('d-none');
+          return;
+        }
+
+        alertBox.className = 'alert alert-info mt-3 mb-0 small';
+        alertBox.textContent = 'Menyimpan update pekerjaan...';
+        alertBox.classList.remove('d-none');
+
+        const res = await callBackendApi("updateDailyTask", { updateData: updateData });
+        if (res.success) {
+          alertBox.className = 'alert alert-success mt-3 mb-0 small';
+          alertBox.textContent = res.message;
+          setTimeout(() => {
+            updateTaskModal.hide();
+            loadDailyTasks();
+          }, 1000);
+        } else {
+          alertBox.className = 'alert alert-danger mt-3 mb-0 small';
+          alertBox.textContent = res.message;
+        }
+      });
+
+      // Cetak PDF, Simpan ke Drive & Bersihkan Pekerjaan Selesai
+      document.getElementById('btnSavePdfDrive').addEventListener('click', async function() {
+        let dateVal = document.getElementById('dailyReportDatePicker').value;
+
+        if (confirm(`Buat dan simpan Laporan Operasional PDF untuk Tanggal Operasional ${dateVal} ke Google Drive?\n\nCatatan: Seluruh pekerjaan SELESAI akan otomatis dibersihkan dari tampilan.`)) {
+          this.disabled = true;
+          this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Membuat PDF...';
+
+          const res = await callBackendApi("saveDailyReportPdf", { dateVal: dateVal });
+          this.disabled = false;
+          this.innerHTML = '<i class="bi bi-file-earmark-pdf-fill me-1"></i> Save to PDF & Drive';
+          if (res.success) {
+            alert(`${res.message}\nFile: ${res.fileName}`);
+            loadDailyTasks();
+          } else {
+            alert('Gagal membuat PDF: ' + res.message);
+          }
+        }
+      });
+
+      window.addEventListener('load', () => {
+        updateAutoDateUI();
+        loadDailyTasks();
+        loadDashboardStats();
+        loadInventorySubmenus();
+        loadArsipSubfolders();
+      });
+
+      // LOGIKA INVENTORY / GUDANG & CRUD BARANG
+      async function loadInventorySubmenus() {
+        const res = await callBackendApi("getInventorySubmenus");
+        const container = document.getElementById('inventorySubmenu');
+        
+        const lowStockEl = document.getElementById('lowStockMenuLink').parentElement;
+        const listBelanjaEl = document.getElementById('listBelanjaMenuLink').parentElement;
+        container.innerHTML = '';
+        container.appendChild(lowStockEl);
+        container.appendChild(listBelanjaEl);
+
+        if (res.success && res.submenus.length > 0) {
+          cachedGudangSubmenus = res.submenus;
+
+          res.submenus.forEach(sub => {
+            const li = document.createElement('li');
+            li.innerHTML = `<a href="#" data-sheet="${sub.sheetName}" data-display="${sub.displayName}"><i class="bi bi-box-seam me-2"></i>${sub.displayName}</a>`;
+            container.appendChild(li);
+          });
+
+          container.querySelectorAll('a[data-sheet]').forEach(link => {
+            link.addEventListener('click', function(e) {
+              e.preventDefault();
+              isLowStockMode = false;
+              activeGudangSheetName = this.getAttribute('data-sheet');
+              const displayName = this.getAttribute('data-display');
+
+              document.querySelectorAll('.content-section').forEach(sec => sec.classList.add('d-none'));
+              document.getElementById('inventory-section').classList.remove('d-none');
+              document.getElementById('inventoryTitle').textContent = 'Inventory Gudang: ' + displayName;
+              document.getElementById('inventorySubtitle').textContent = 'Pencatatan dan pengelolaan stok data inventaris gudang.';
+              
+              document.getElementById('openChooseModeBtn').classList.remove('d-none');
+              document.getElementById('inventorySearchInput').value = '';
+
+              document.getElementById('colHeaderNama').textContent = 'Nama Barang';
+              document.getElementById('colHeaderAksi').style.display = '';
+
+              loadGudangItems(activeGudangSheetName);
+
+              if (window.innerWidth < 992) {
+                sidebar.classList.remove('show-mobile');
+                sidebarOverlay.classList.remove('show-mobile');
+              }
+            });
+          });
+        }
+
+        document.getElementById('lowStockMenuLink').addEventListener('click', function(e) {
+          e.preventDefault();
+          isLowStockMode = true;
+          activeGudangSheetName = null;
+
+          document.querySelectorAll('.content-section').forEach(sec => sec.classList.add('d-none'));
+          document.getElementById('inventory-section').classList.remove('d-none');
+          document.getElementById('inventoryTitle').textContent = 'Peringatan: Low Stok Barang';
+          document.getElementById('inventorySubtitle').textContent = 'Daftar seluruh item barang yang stoknya kurang dari atau sama dengan stok minimum.';
+          
+          document.getElementById('openChooseModeBtn').classList.add('d-none');
+          document.getElementById('inventorySearchInput').value = '';
+
+          document.getElementById('colHeaderNama').textContent = 'Nama Barang (Gudang)';
+          document.getElementById('colHeaderAksi').style.display = '';
+
+          loadLowStockItems();
+
+          if (window.innerWidth < 992) {
+            sidebar.classList.remove('show-mobile');
+            sidebarOverlay.classList.remove('show-mobile');
+          }
+        });
+
+        document.getElementById('listBelanjaMenuLink').addEventListener('click', function(e) {
+          e.preventDefault();
+          document.querySelectorAll('.content-section').forEach(sec => sec.classList.add('d-none'));
+          document.getElementById('list-belanja-section').classList.remove('d-none');
+          document.getElementById('shoppingSearchInput').value = '';
+          loadShoppingListTable();
+
+          if (window.innerWidth < 992) {
+            sidebar.classList.remove('show-mobile');
+            sidebarOverlay.classList.remove('show-mobile');
+          }
+        });
+      }
+
+      async function loadGudangItems(sheetName) {
+        const tbody = document.getElementById('inventoryTableBody');
+        tbody.innerHTML = '<tr><td colspan="11" class="text-center py-5"><div class="spinner-border text-primary spinner-border-sm me-2"></div>Memuat data barang...</td></tr>';
+
+        const res = await callBackendApi("getGudangItems", { sheetName: sheetName });
+        tbody.innerHTML = '';
+        if (res.success && res.items.length > 0) {
+          cachedInventoryItems = res.items;
+          applyInventoryFilter();
+        } else {
+          cachedInventoryItems = [];
+          tbody.innerHTML = '<tr><td colspan="11" class="text-center py-5 text-muted"><i class="bi bi-inbox display-6 mb-2 d-block opacity-50"></i>Belum ada data barang di dalam gudang ini.</td></tr>';
+        }
+      }
+
+      async function loadLowStockItems() {
+        const tbody = document.getElementById('inventoryTableBody');
+        tbody.innerHTML = '<tr><td colspan="11" class="text-center py-5"><div class="spinner-border text-danger spinner-border-sm me-2"></div>Memindai barang low stok...</td></tr>';
+
+        const res = await callBackendApi("getLowStockItems");
+        tbody.innerHTML = '';
+        if (res.success && res.items.length > 0) {
+          cachedInventoryItems = res.items;
+          applyInventoryFilter();
+        } else {
+          cachedInventoryItems = [];
+          tbody.innerHTML = '<tr><td colspan="11" class="text-center py-5 text-success"><i class="bi bi-check-circle display-6 mb-2 d-block"></i>Aman! Tidak ada barang yang mengalami low stok saat ini.</td></tr>';
+        }
+      }
+
+      document.getElementById('inventorySearchInput').addEventListener('input', function() {
+        applyInventoryFilter();
+      });
+
+      function applyInventoryFilter() {
+        const query = document.getElementById('inventorySearchInput').value.toLowerCase().trim();
+
+        const filteredItems = cachedInventoryItems.filter(item => {
+          const barcodeStr = (item.barcode || '').toString().toLowerCase();
+          const namaStr = (item.nama || '').toString().toLowerCase();
+          const gudangStr = (item.gudangName || '').toString().toLowerCase();
+          
+          return barcodeStr.includes(query) || namaStr.includes(query) || gudangStr.includes(query);
+        });
+
+        renderInventoryTableRows(filteredItems);
+      }
+
+      function renderInventoryTableRows(items) {
+        const tbody = document.getElementById('inventoryTableBody');
+        tbody.innerHTML = '';
+
+        if (items.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="11" class="text-center py-5 text-muted"><i class="bi bi-search display-6 mb-2 d-block opacity-50"></i>Tidak ada barang yang cocok dengan kata kunci pencarian.</td></tr>`;
+          return;
+        }
+
+        items.forEach((item) => {
+          const originalIndex = cachedInventoryItems.indexOf(item);
+          const tr = document.createElement('tr');
+
+          let namaDisplay = item.nama || '-';
+          if (isLowStockMode) {
+            namaDisplay = `${item.nama || '-'} <span class="badge bg-secondary-subtle text-secondary border ms-1" style="font-size: 0.65rem;">${item.gudangName}</span>`;
+          }
+
+          let rowHtml = `
+            <td><span class="badge bg-light text-dark border fw-medium text-truncate d-block" title="${item.barcode || '-'}">${item.barcode || '-'}</span></td>
+            <td class="fw-semibold text-dark" title="${item.nama || '-'}">${namaDisplay}</td>
+            <td title="${item.kategori || '-'}">${item.kategori || '-'}</td>
+            <td title="${item.merk || '-'}">${item.merk || '-'}</td>
+            <td title="${item.spesifikasi || '-'}">${item.spesifikasi || '-'}</td>
+            <td title="${item.satuan || '-'}">${item.satuan || '-'}</td>
+            <td title="${item.lokasiRak || '-'}">${item.lokasiRak || '-'}</td>
+            <td class="fw-bold text-danger text-center" title="Stok Gudang">${item.stokGudang || 0}</td>
+            <td class="text-secondary text-center" title="Stok Minimum">${item.stokMinimum || 0}</td>
+            <td title="${item.supplier || '-'}">${item.supplier || '-'}</td>
+          `;
+
+          if (isLowStockMode) {
+            rowHtml += `
+              <td class="text-end" style="padding-right: 12px;">
+                <button class="btn btn-sm btn-primary fw-semibold btn-buy-item py-1 px-2" data-index="${originalIndex}" title="Beli Barang">
+                  <i class="bi bi-cart-plus me-1"></i> Beli
+                </button>
+              </td>
+            `;
+          } else {
+            rowHtml += `
+              <td class="text-end" style="padding-right: 12px;">
+                <div class="d-flex justify-content-end gap-1 text-nowrap">
+                  <button class="btn btn-icon-action btn-outline-primary btn-edit-item" data-index="${originalIndex}" title="Edit Barang">
+                    <i class="bi bi-pencil-square"></i>
+                  </button>
+                  <button class="btn btn-icon-action btn-outline-danger btn-delete-item" data-index="${originalIndex}" title="Hapus Barang">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </td>
+            `;
+          }
+
+          tr.innerHTML = rowHtml;
+          tbody.appendChild(tr);
+        });
+
+        if (isLowStockMode) {
+          document.querySelectorAll('.btn-buy-item').forEach(btn => {
+            btn.addEventListener('click', function() {
+              const index = parseInt(this.getAttribute('data-index'));
+              const item = cachedInventoryItems[index];
+
+              document.getElementById('orderItemGudang').value = item.gudangSheet;
+              document.getElementById('orderItemBarcode').value = item.barcode || '';
+              document.getElementById('orderItemNama').value = item.nama;
+              document.getElementById('orderItemQty').value = 1;
+              document.getElementById('orderItemKeterangan').value = '';
+              document.getElementById('orderAlert').classList.add('d-none');
+
+              orderModal.show();
+            });
+          });
+        } else {
+          document.querySelectorAll('.btn-edit-item').forEach(btn => {
+            btn.addEventListener('click', function() {
+              const index = parseInt(this.getAttribute('data-index'));
+              openItemModal('edit', index);
+            });
+          });
+
+          document.querySelectorAll('.btn-delete-item').forEach(btn => {
+            btn.addEventListener('click', async function() {
+              const index = parseInt(this.getAttribute('data-index'));
+              const item = cachedInventoryItems[index];
+              if (confirm(`Apakah Anda yakin ingin menghapus barang "${item.nama}"?`)) {
+                const res = await callBackendApi("deleteGudangItem", { sheetName: activeGudangSheetName, rowIndex: index });
+                if (res.success) {
+                  loadGudangItems(activeGudangSheetName);
+                } else {
+                  alert('Gagal menghapus barang: ' + res.message);
+                }
+              }
+            });
+          });
+        }
+      }
+
+      document.getElementById('confirmOrderBtn').addEventListener('click', async function() {
+        const orderData = {
+          gudangSheet: document.getElementById('orderItemGudang').value,
+          barcode: document.getElementById('orderItemBarcode').value,
+          nama: document.getElementById('orderItemNama').value,
+          qty: parseFloat(document.getElementById('orderItemQty').value) || 1,
+          keterangan: document.getElementById('orderItemKeterangan').value.trim()
+        };
+
+        const alertBox = document.getElementById('orderAlert');
+        alertBox.className = 'alert alert-info mt-3 mb-0 small';
+        alertBox.textContent = 'Menambahkan barang ke List Belanja...';
+        alertBox.classList.remove('d-none');
+
+        const res = await callBackendApi("addToShoppingList", { orderData: orderData });
+        if (res.success) {
+          alertBox.className = 'alert alert-success mt-3 mb-0 small';
+          alertBox.textContent = res.message;
+          setTimeout(() => {
+            orderModal.hide();
+          }, 1000);
+        } else {
+          alertBox.className = 'alert alert-danger mt-3 mb-0 small';
+          alertBox.textContent = res.message;
+        }
+      });
+
+      // LOGIKA LIST BELANJA & RECEIVE ORDER
+      async function loadShoppingListTable() {
+        const tbody = document.getElementById('shoppingListTableBody');
+        tbody.innerHTML = '<tr><td colspan="11" class="text-center py-5"><div class="spinner-border text-primary spinner-border-sm me-2"></div>Memuat daftar belanja...</td></tr>';
+        
+        document.getElementById('selectAllShoppingList').checked = false;
+        updateBulkButtonVisibility();
+
+        const res = await callBackendApi("getShoppingList");
+        tbody.innerHTML = '';
+        if (res.success && res.items.length > 0) {
+          cachedShoppingListItems = res.items;
+          applyShoppingListFilter();
+        } else {
+          cachedShoppingListItems = [];
+          tbody.innerHTML = '<tr><td colspan="11" class="text-center py-5 text-muted"><i class="bi bi-cart-x display-6 mb-2 d-block opacity-50"></i>Belum ada item dalam daftar belanja.</td></tr>';
+        }
+      }
+
+      document.querySelectorAll('#shoppingStatusFilterGroup button').forEach(btn => {
+        btn.addEventListener('click', function() {
+          document.querySelectorAll('#shoppingStatusFilterGroup button').forEach(b => {
+            b.classList.remove('active', 'fw-bold');
+          });
+          this.classList.add('active', 'fw-bold');
+          activeShoppingStatusFilter = this.getAttribute('data-status');
+          applyShoppingListFilter();
+        });
+      });
+
+      document.getElementById('shoppingSearchInput').addEventListener('input', function() {
+        applyShoppingListFilter();
+      });
+
+      function applyShoppingListFilter() {
+        const query = document.getElementById('shoppingSearchInput').value.toLowerCase().trim();
+
+        const filteredList = cachedShoppingListItems.filter(item => {
+          const namaStr = (item.nama || '').toString().toLowerCase();
+          const ketStr = (item.keterangan || '').toString().toLowerCase();
+          const prStr = (item.noPr || '').toString().toLowerCase();
+          const poStr = (item.noPo || '').toString().toLowerCase();
+          const idStr = (item.orderId || '').toString().toLowerCase();
+
+          const matchQuery = namaStr.includes(query) || ketStr.includes(query) || prStr.includes(query) || poStr.includes(query) || idStr.includes(query);
+          const matchStatus = (activeShoppingStatusFilter === 'all') || (item.status === activeShoppingStatusFilter);
+
+          return matchQuery && matchStatus;
+        });
+
+        renderShoppingListRows(filteredList);
+      }
+
+      function renderShoppingListRows(items) {
+        const tbody = document.getElementById('shoppingListTableBody');
+        tbody.innerHTML = '';
+
+        if (items.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="11" class="text-center py-5 text-muted"><i class="bi bi-search display-6 mb-2 d-block opacity-50"></i>Tidak ada daftar belanja yang cocok dengan pencarian atau filter status.</td></tr>`;
+          return;
+        }
+
+        items.forEach(item => {
+          const tr = document.createElement('tr');
+          let statusBadge = '';
+
+          if (item.status === 'Draft Order') {
+            statusBadge = `<span class="badge bg-secondary-subtle text-secondary border">Draft Order</span>`;
+          } else if (item.status === 'Sedang Proses') {
+            statusBadge = `<span class="badge bg-warning-subtle text-warning border">Sedang Proses</span>`;
+          } else {
+            statusBadge = `<span class="badge bg-success-subtle text-success border">Selesai / Diterima</span>`;
+          }
+
+          let actionBtn = '';
+          let checkboxCell = '';
+
+          if (item.status === 'Draft Order') {
+            checkboxCell = `<input type="checkbox" class="form-check-input item-checkbox" data-index="${item.rowIndex}">`;
+            actionBtn = `
+              <button class="btn btn-sm btn-outline-warning text-dark fw-semibold btn-process-prpo py-1 px-2" data-index="${item.rowIndex}" data-pr="${item.noPr || ''}" data-po="${item.noPo || ''}" data-notes="${item.catatanPrPo || ''}">
+                <i class="bi bi-pencil-square me-1"></i> Input PR/PO
+              </button>
+            `;
+          } else {
+            checkboxCell = `<input type="checkbox" class="form-check-input" disabled>`;
+            if (item.status === 'Sedang Proses') {
+              actionBtn = `
+                <button class="btn btn-sm btn-success fw-semibold btn-receive-item py-1 px-2" data-index="${item.rowIndex}">
+                  <i class="bi bi-check-lg me-1"></i> Diterima
+                </button>
+              `;
+            } else {
+              actionBtn = `<span class="text-success small fw-semibold"><i class="bi bi-check-all me-1"></i> Selesai</span>`;
+            }
+          }
+
+          tr.innerHTML = `
+            <td class="text-center">${checkboxCell}</td>
+            <td><code class="text-dark small">${item.orderId}</code></td>
+            <td><span class="badge bg-light text-dark border">${item.gudangSheet.replace('G.', '')}</span></td>
+            <td class="fw-semibold text-dark" title="${item.nama}">${item.nama}</td>
+            <td class="text-center fw-bold">${item.qty}</td>
+            <td title="${item.keterangan || '-'}">${item.keterangan || '-'}</td>
+            <td><span class="fw-medium text-dark">${item.noPr || '-'}</span></td>
+            <td><span class="fw-medium text-dark">${item.noPo || '-'}</span></td>
+            <td>${statusBadge}</td>
+            <td class="small text-muted">${item.tanggalOrder}</td>
+            <td class="text-end" style="padding-right: 12px;">${actionBtn}</td>
+          `;
+
+          tbody.appendChild(tr);
+        });
+
+        document.querySelectorAll('.item-checkbox').forEach(cb => {
+          cb.addEventListener('change', updateBulkButtonVisibility);
+        });
+
+        document.querySelectorAll('.btn-process-prpo').forEach(btn => {
+          btn.addEventListener('click', function() {
+            const index = parseInt(this.getAttribute('data-index'));
+            document.getElementById('prPoRowIndices').value = JSON.stringify([index]);
+            document.getElementById('prNumberInput').value = this.getAttribute('data-pr');
+            document.getElementById('poNumberInput').value = this.getAttribute('data-po');
+            document.getElementById('prPoNotesInput').value = this.getAttribute('data-notes');
+            document.getElementById('prPoAlert').classList.add('d-none');
+            prPoModal.show();
+          });
+        });
+
+        document.querySelectorAll('.btn-receive-item').forEach(btn => {
+          btn.addEventListener('click', async function() {
+            const index = parseInt(this.getAttribute('data-index'));
+            if (confirm('Konfirmasi penerimaan barang? Stok gudang otomatis bertambah & riwayat dicatat di History_In.')) {
+              const res = await callBackendApi("receiveOrderItem", { rowIndex: index });
+              if (res.success) {
+                alert(res.message);
+                loadShoppingListTable();
+              } else {
+                alert('Gagal menerima barang: ' + res.message);
+              }
+            }
+          });
+        });
+
+        updateBulkButtonVisibility();
+      }
+
+      document.getElementById('selectAllShoppingList').addEventListener('change', function() {
+        const isChecked = this.checked;
+        document.querySelectorAll('.item-checkbox').forEach(cb => {
+          cb.checked = isChecked;
+        });
+        updateBulkButtonVisibility();
+      });
+
+      function updateBulkButtonVisibility() {
+        const selectedCheckboxes = document.querySelectorAll('.item-checkbox:checked');
+        const count = selectedCheckboxes.length;
+        const bulkBtn = document.getElementById('bulkPrPoBtn');
+        const countSpan = document.getElementById('selectedCount');
+
+        if (count > 0) {
+          countSpan.textContent = count;
+          bulkBtn.classList.remove('d-none');
+        } else {
+          bulkBtn.classList.add('d-none');
+        }
+      }
+
+      document.getElementById('bulkPrPoBtn').addEventListener('click', function() {
+        const selectedCheckboxes = document.querySelectorAll('.item-checkbox:checked');
+        const indices = Array.from(selectedCheckboxes).map(cb => parseInt(cb.getAttribute('data-index')));
+
+        if (indices.length === 0) return;
+
+        document.getElementById('prPoRowIndices').value = JSON.stringify(indices);
+        document.getElementById('prNumberInput').value = '';
+        document.getElementById('poNumberInput').value = '';
+        document.getElementById('prPoNotesInput').value = '';
+        document.getElementById('prPoAlert').classList.add('d-none');
+        prPoModal.show();
+      });
+
+      document.getElementById('confirmPrPoBtn').addEventListener('click', async function() {
+        const rowIndices = JSON.parse(document.getElementById('prPoRowIndices').value);
+        const prPoData = {
+          noPr: document.getElementById('prNumberInput').value.trim(),
+          noPo: document.getElementById('poNumberInput').value.trim(),
+          catatanPrPo: document.getElementById('prPoNotesInput').value.trim()
+        };
+
+        const alertBox = document.getElementById('prPoAlert');
+
+        if (!prPoData.noPr && !prPoData.noPo) {
+          alertBox.className = 'alert alert-danger mt-3 mb-0 small';
+          alertBox.textContent = 'Harap isi setidaknya Nomor PR atau Nomor PO.';
+          alertBox.classList.remove('d-none');
+          return;
+        }
+
+        alertBox.className = 'alert alert-info mt-3 mb-0 small';
+        alertBox.textContent = 'Memperbarui data PR & PO...';
+        alertBox.classList.remove('d-none');
+
+        const res = await callBackendApi("updatePrPoStatus", { rowIndices: rowIndices, prPoData: prPoData });
+        if (res.success) {
+          alertBox.className = 'alert alert-success mt-3 mb-0 small';
+          alertBox.textContent = res.message;
+          setTimeout(() => {
+            prPoModal.hide();
+            loadShoppingListTable();
+          }, 1000);
+        } else {
+          alertBox.className = 'alert alert-danger mt-3 mb-0 small';
+          alertBox.textContent = res.message;
+        }
+      });
+
+      document.getElementById('openChooseModeBtn').addEventListener('click', function() {
+        if (!activeGudangSheetName) return alert('Pilih gudang terlebih dahulu.');
+        chooseAddModeModal.show();
+      });
+
+      document.getElementById('selectManualMode').addEventListener('click', function() {
+        chooseAddModeModal.hide();
+        openItemModal('add');
+      });
+
+      document.getElementById('selectExcelMode').addEventListener('click', function() {
+        chooseAddModeModal.hide();
+        document.getElementById('excelFile').value = '';
+        document.getElementById('uploadExcelAlert').classList.add('d-none');
+        uploadExcelModal.show();
+      });
+
+      document.getElementById('confirmUploadExcelBtn').addEventListener('click', function() {
+        const fileInput = document.getElementById('excelFile');
+        const alertBox = document.getElementById('uploadExcelAlert');
+
+        if (fileInput.files.length === 0) {
+          alertBox.className = 'alert alert-danger mt-3 mb-0 small';
+          alertBox.textContent = 'Pilih file Excel / CSV terlebih dahulu.';
+          alertBox.classList.remove('d-none');
+          return;
+        }
+
+        const file = fileInput.files[0];
+        const reader = new FileReader();
+
+        alertBox.className = 'alert alert-info mt-3 mb-0 small';
+        alertBox.textContent = 'Membaca file Excel...';
+        alertBox.classList.remove('d-none');
+
+        reader.onload = async function(e) {
+          try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            
+            const firstSheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[firstSheetName];
+            
+            const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+            if (rows.length <= 1) {
+              alertBox.className = 'alert alert-danger mt-3 mb-0 small';
+              alertBox.textContent = 'File Excel tidak memiliki data (hanya header atau kosong).';
+              return;
+            }
+
+            const dataRows = rows.slice(1);
+
+            if (dataRows.length > 1000) {
+              alertBox.className = 'alert alert-warning mt-3 mb-0 small';
+              alertBox.textContent = 'Data terlalu besar (lebih dari 1000 baris). Harap bagi file menjadi beberapa bagian.';
+              return;
+            }
+
+            alertBox.textContent = 'Mengimpor data ke Google Sheet...';
+
+            const res = await callBackendApi("importExcelDataRows", { sheetName: activeGudangSheetName, rowsArray: dataRows });
+            if (res.success) {
+              alertBox.className = 'alert alert-success mt-3 mb-0 small';
+              alertBox.textContent = res.message;
+              setTimeout(() => {
+                uploadExcelModal.hide();
+                loadGudangItems(activeGudangSheetName);
+              }, 1200);
+            } else {
+              alertBox.className = 'alert alert-danger mt-3 mb-0 small';
+              alertBox.textContent = res.message;
+            }
+
+          } catch (err) {
+            alertBox.className = 'alert alert-danger mt-3 mb-0 small';
+            alertBox.textContent = 'Gagal membaca file Excel: ' + err.message;
+          }
+        };
+
+        reader.readAsArrayBuffer(file);
+      });
+
+      function openItemModal(mode, index = null) {
+        const alertBox = document.getElementById('itemModalAlert');
+        alertBox.classList.add('d-none');
+        document.getElementById('itemRowIndex').value = '';
+
+        if (mode === 'add') {
+          document.getElementById('itemModalTitle').innerHTML = '<i class="bi bi-box-seam me-2 text-primary"></i>Tambah Barang Manual';
+          document.getElementById('itemBarcode').value = '';
+          document.getElementById('itemNama').value = '';
+          document.getElementById('itemKategori').value = '';
+          document.getElementById('itemMerk').value = '';
+          document.getElementById('itemSpesifikasi').value = '';
+          document.getElementById('itemSatuan').value = '';
+          document.getElementById('itemLokasiRak').value = '';
+          document.getElementById('itemStokGudang').value = '';
+          document.getElementById('itemStokMinimum').value = '';
+          document.getElementById('itemSupplier').value = '';
+        } else {
+          document.getElementById('itemModalTitle').innerHTML = '<i class="bi bi-pencil-square me-2 text-primary"></i>Edit Data Barang';
+          const item = cachedInventoryItems[index];
+          document.getElementById('itemRowIndex').value = index;
+          document.getElementById('itemBarcode').value = item.barcode || '';
+          document.getElementById('itemNama').value = item.nama || '';
+          document.getElementById('itemKategori').value = item.kategori || '';
+          document.getElementById('itemMerk').value = item.merk || '';
+          document.getElementById('itemSpesifikasi').value = item.spesifikasi || '';
+          document.getElementById('itemSatuan').value = item.satuan || '';
+          document.getElementById('itemLokasiRak').value = item.lokasiRak || '';
+          document.getElementById('itemStokGudang').value = item.stokGudang || '';
+          document.getElementById('itemStokMinimum').value = item.stokMinimum || '';
+          document.getElementById('itemSupplier').value = item.supplier || '';
+        }
+
+        itemModal.show();
+      }
+
+      document.getElementById('saveItemBtn').addEventListener('click', async function() {
+        const rowIndex = document.getElementById('itemRowIndex').value;
+        const alertBox = document.getElementById('itemModalAlert');
+
+        const itemData = {
+          barcode: document.getElementById('itemBarcode').value.trim(),
+          nama: document.getElementById('itemNama').value.trim(),
+          kategori: document.getElementById('itemKategori').value.trim(),
+          merk: document.getElementById('itemMerk').value.trim(),
+          spesifikasi: document.getElementById('itemSpesifikasi').value.trim(),
+          satuan: document.getElementById('itemSatuan').value.trim(),
+          lokasiRak: document.getElementById('itemLokasiRak').value.trim(),
+          stokGudang: parseFloat(document.getElementById('itemStokGudang').value) || 0,
+          stokMinimum: parseFloat(document.getElementById('itemStokMinimum').value) || 0,
+          supplier: document.getElementById('itemSupplier').value.trim()
+        };
+
+        if (!itemData.nama) {
+          alertBox.className = 'alert alert-danger mt-3 mb-0 small';
+          alertBox.textContent = 'Nama barang tidak boleh kosong.';
+          alertBox.classList.remove('d-none');
+          return;
+        }
+
+        alertBox.className = 'alert alert-info mt-3 mb-0 small';
+        alertBox.textContent = 'Menyimpan data barang...';
+        alertBox.classList.remove('d-none');
+
+        let res;
+        if (rowIndex === '') {
+          res = await callBackendApi("addGudangItem", { sheetName: activeGudangSheetName, itemData: itemData });
+        } else {
+          res = await callBackendApi("updateGudangItem", { sheetName: activeGudangSheetName, rowIndex: parseInt(rowIndex), itemData: itemData });
+        }
+
+        if (res.success) {
+          alertBox.className = 'alert alert-success mt-3 mb-0 small';
+          alertBox.textContent = res.message;
+          setTimeout(() => {
+            itemModal.hide();
+            loadGudangItems(activeGudangSheetName);
+          }, 1000);
+        } else {
+          alertBox.className = 'alert alert-danger mt-3 mb-0 small';
+          alertBox.textContent = res.message;
+        }
+      });
+
+      document.getElementById('confirmAddGudangBtn').addEventListener('click', async function() {
+        const nameInput = document.getElementById('gudangNameInput').value.trim();
+        const alertBox = document.getElementById('addGudangAlert');
+
+        if (!nameInput) {
+          alertBox.className = 'alert alert-danger mt-3 mb-0 small';
+          alertBox.textContent = 'Nama gudang tidak boleh kosong.';
+          alertBox.classList.remove('d-none');
+          return;
+        }
+
+        alertBox.className = 'alert alert-info mt-3 mb-0 small';
+        alertBox.textContent = 'Membuat sheet gudang baru...';
+        alertBox.classList.remove('d-none');
+
+        const res = await callBackendApi("createNewGudangSheet", { gudangName: nameInput });
+        if (res.success) {
+          alertBox.className = 'alert alert-success mt-3 mb-0 small';
+          alertBox.textContent = res.message;
+
+          setTimeout(() => {
+            document.getElementById('gudangNameInput').value = '';
+            alertBox.classList.add('d-none');
+            bootstrap.Modal.getInstance(document.getElementById('addGudangModal')).hide();
+
+            loadInventorySubmenus();
+            
+            isLowStockMode = false;
+            activeGudangSheetName = res.sheetName;
+            document.querySelectorAll('.content-section').forEach(sec => sec.classList.add('d-none'));
+            document.getElementById('inventory-section').classList.remove('d-none');
+            document.getElementById('inventoryTitle').textContent = 'Inventory Gudang: ' + res.displayName;
+            document.getElementById('inventorySubtitle').textContent = 'Pencatatan dan pengelolaan stok data inventaris gudang.';
+            document.getElementById('openChooseModeBtn').classList.remove('d-none');
+            document.getElementById('inventorySearchInput').value = '';
+
+            document.getElementById('colHeaderNama').textContent = 'Nama Barang';
+            document.getElementById('colHeaderAksi').style.display = '';
+
+            loadGudangItems(activeGudangSheetName);
+          }, 1200);
+
+        } else {
+          alertBox.className = 'alert alert-danger mt-3 mb-0 small';
+          alertBox.textContent = res.message;
+        }
+      });
+
+      // LOGIKA ARSIP DOKUMEN & PREVIEW PDF
+      async function loadArsipSubfolders() {
+        const res = await callBackendApi("getArsipSubfolders");
+        const submenuContainer = document.getElementById('arsipSubmenu');
+        submenuContainer.innerHTML = '';
+
+        if (res.success && res.subfolders.length > 0) {
+          res.subfolders.forEach(sub => {
+            const li = document.createElement('li');
+            
+            if (sub.children && sub.children.length > 0) {
+              const collapseId = 'collapse_' + sub.id;
+              let childrenHtml = '';
+              sub.children.forEach(child => {
+                childrenHtml += `<li><a href="#" data-folder-id="${child.id}" data-folder-name="${sub.name} / ${child.name}"><i class="bi bi-folder me-2"></i>${child.name}</a></li>`;
+              });
+
+              li.innerHTML = `
+                <a href="#${collapseId}" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle">
+                  <i class="bi bi-folder2 me-2"></i>${sub.name}
+                </a>
+                <ul class="collapse sub-submenu" id="${collapseId}">
+                  ${childrenHtml}
+                </ul>
+              `;
+            } else {
+              li.innerHTML = `<a href="#" data-folder-id="${sub.id}" data-folder-name="${sub.name}"><i class="bi bi-folder2 me-2"></i>${sub.name}</a>`;
+            }
+            
+            submenuContainer.appendChild(li);
+          });
+
+          submenuContainer.querySelectorAll('a[data-folder-id]').forEach(link => {
+            link.addEventListener('click', function(e) {
+              e.preventDefault();
+              currentSelectedFolderId = this.getAttribute('data-folder-id');
+              const folderName = this.getAttribute('data-folder-name');
+
+              document.querySelectorAll('.content-section').forEach(sec => sec.classList.add('d-none'));
+              document.getElementById('arsip-section').classList.remove('d-none');
+              document.getElementById('activeFolderBadge').textContent = 'Folder: ' + folderName;
+
+              document.getElementById('searchInput').value = '';
+              resetFilterButtons();
+              loadPdfTable(currentSelectedFolderId);
+
+              if (window.innerWidth < 992) {
+                sidebar.classList.remove('show-mobile');
+                sidebarOverlay.classList.remove('show-mobile');
+              }
+            });
+          });
+        } else {
+          submenuContainer.innerHTML = '<li><a href="#" class="text-muted">Tidak ada subfolder</a></li>';
+        }
+      }
+
+      document.querySelectorAll('#filterButtonGroup .btn-filter').forEach(btn => {
+        btn.addEventListener('click', function() {
+          document.querySelectorAll('#filterButtonGroup .btn-filter').forEach(b => {
+            b.classList.remove('active', 'btn-primary');
+            b.classList.add('btn-light');
+          });
+
+          this.classList.remove('btn-light');
+          this.classList.add('active', 'btn-primary');
+
+          activeStatusFilter = this.getAttribute('data-status');
+          applyCombinedFilter();
+        });
+      });
+
+      function resetFilterButtons() {
+        activeStatusFilter = 'all';
+        document.querySelectorAll('#filterButtonGroup .btn-filter').forEach(b => {
+          b.classList.remove('active', 'btn-primary');
+          b.classList.add('btn-light');
+          if (b.getAttribute('data-status') === 'all') {
+            b.classList.remove('btn-light');
+            b.classList.add('active', 'btn-primary');
+          }
+        });
+      }
+
+      document.getElementById('searchInput').addEventListener('input', function() {
+        applyCombinedFilter();
+      });
+
+      function applyCombinedFilter() {
+        const query = document.getElementById('searchInput').value.toLowerCase().trim();
+
+        const filteredFiles = cachedPdfFiles.filter(file => {
+          const matchName = file.name.toLowerCase().includes(query);
+          const matchStatus = (activeStatusFilter === 'all') || (file.statusText === activeStatusFilter);
+          return matchName && matchStatus;
+        });
+
+        renderPdfTableRows(filteredFiles);
+      }
+
+      async function loadPdfTable(folderId) {
+        const tbody = document.getElementById('pdfTableBody');
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5"><div class="spinner-border text-primary spinner-border-sm me-2"></div>Memuat daftar file PDF...</td></tr>';
+
+        const response = await callBackendApi("getPdfFiles", { folderId: folderId });
+        if (response.success && response.files.length > 0) {
+          cachedPdfFiles = response.files;
+          applyCombinedFilter();
+        } else {
+          cachedPdfFiles = [];
+          tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted"><i class="bi bi-folder-x display-6 mb-2 d-block opacity-50"></i>Tidak ada file PDF di dalam folder ini.</td></tr>';
+        }
+      }
+
+      function renderPdfTableRows(files) {
+        const tbody = document.getElementById('pdfTableBody');
+        tbody.innerHTML = '';
+
+        if (files.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-muted"><i class="bi bi-search display-6 mb-2 d-block opacity-50"></i>Tidak ada dokumen yang cocok dengan filter atau pencarian.</td></tr>';
+          return;
+        }
+
+        files.forEach(file => {
+          const tr = document.createElement('tr');
+          let statusBadge = '';
+
+          if (file.statusText === '2/2') {
+            statusBadge = `<span class="badge-status-2"><i class="bi bi-check2-all me-1"></i>2/2</span>`;
+          } else if (file.statusText === '1/2') {
+            statusBadge = `<span class="badge-status-1"><i class="bi bi-pencil me-1"></i>1/2</span>`;
+          } else {
+            statusBadge = `<span class="badge-status-0"><i class="bi bi-dash-circle me-1"></i>0/2</span>`;
+          }
+
+          tr.innerHTML = `
+            <td>
+              <div class="d-flex align-items-center">
+                <i class="bi bi-file-earmark-pdf fs-4 text-danger me-3"></i>
+                <div>
+                  <div class="fw-semibold text-dark">${file.name}</div>
+                </div>
+              </div>
+            </td>
+            <td>${statusBadge}</td>
+            <td class="text-muted text-nowrap">${file.size}</td>
+            <td class="text-muted text-nowrap">${file.lastUpdated}</td>
+            <td class="text-end" style="padding-right: 24px;">
+              <div class="d-flex justify-content-end gap-1 text-nowrap">
+                <button class="btn btn-icon-action btn-outline-primary btn-lihat" data-id="${file.id}" data-name="${file.name}" title="Lihat & TTD">
+                  <i class="bi bi-pencil-square"></i>
+                </button>
+                <a href="${file.downloadUrl}" target="_blank" class="btn btn-icon-action btn-light border text-dark" title="Unduh">
+                  <i class="bi bi-download"></i>
+                </a>
+                <button class="btn btn-icon-action btn-outline-danger btn-delete" data-id="${file.id}" data-name="${file.name}" title="Hapus">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        document.querySelectorAll('.btn-lihat').forEach(btn => {
+          btn.addEventListener('click', function() {
+            activeFileId = this.getAttribute('data-id');
+            activeFileName = this.getAttribute('data-name');
+            openPreviewModal(activeFileId, activeFileName);
+          });
+        });
+
+        document.querySelectorAll('.btn-delete').forEach(btn => {
+          btn.addEventListener('click', async function() {
+            const id = this.getAttribute('data-id');
+            const name = this.getAttribute('data-name');
+            if (confirm(`Apakah Anda yakin ingin menghapus file "${name}"?`)) {
+              const res = await callBackendApi("deletePdfFile", { fileId: id });
+              if (res.success) {
+                loadPdfTable(currentSelectedFolderId);
+              } else {
+                alert('Gagal menghapus: ' + res.message);
+              }
+            }
+          });
+        });
+      }
+
+      // Modal PDF Canvas Logic
+      const modalEl = document.getElementById('previewModal');
+      const previewModal = new bootstrap.Modal(modalEl);
+      
+      const pad = document.getElementById('signature-pad');
+      const padCtx = pad.getContext('2d');
+      let isDrawing = false;
+      let mergedDataUrl = null;
+      let mergedAspectRatio = 1;
+
+      let rawPdfArrayBuffer = null;
+      let pdfDoc = null;
+      let pageNum = 1;
+      
+      let autoBaseScale = 1.0;
+      let userZoomFactor = 1.0;
+      let currentRenderScale = 1.0;
+
+      let posX = 20;
+      let posY = 20;
+
+      async function openPreviewModal(fileId, fileName) {
+        document.getElementById('previewModalLabel').textContent = fileName;
+        document.getElementById('dragSignature').style.display = 'none';
+        padCtx.clearRect(0, 0, pad.width, pad.height);
+        document.getElementById('signerName').value = '';
+        document.getElementById('statusAlert').classList.add('d-none');
+        
+        userZoomFactor = 1.0;
+        updateZoomText();
+
+        previewModal.show();
+
+        const res = await callBackendApi("getPdfBase64", { fileId: fileId });
+        if (res.success) {
+          const binaryString = atob(res.base64);
+          const bytes = new Uint8Array(binaryString.length);
+          for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+          rawPdfArrayBuffer = bytes.buffer;
+
+          pdfjsLib.getDocument({ data: bytes }).promise.then(pdf => {
+            pdfDoc = pdf;
+            pageNum = 1;
+            renderPage(pageNum);
+          });
+        } else {
+          alert('Gagal memuat PDF: ' + res.message);
+        }
+      }
+
+      modalEl.addEventListener('shown.bs.modal', () => {
+        if (pdfDoc) renderPage(pageNum);
+      });
+
+      function renderPage(num) {
+        pdfDoc.getPage(num).then(page => {
+          const container = document.getElementById('pdf-container');
+          const unscaledViewport = page.getViewport({ scale: 1.0 });
+
+          const availableWidth = container.clientWidth - 32;
+          const availableHeight = container.clientHeight - 32;
+
+          const scaleX = availableWidth / unscaledViewport.width;
+          const scaleY = availableHeight / unscaledViewport.height;
+
+          autoBaseScale = Math.min(scaleX, scaleY);
+          if (autoBaseScale < 0.4) autoBaseScale = 0.4;
+
+          currentRenderScale = autoBaseScale * userZoomFactor;
+
+          const viewport = page.getViewport({ scale: currentRenderScale });
+          const pdfCanvas = document.getElementById('pdf-canvas');
+          const context = pdfCanvas.getContext('2d');
+
+          pdfCanvas.height = viewport.height;
+          pdfCanvas.width = viewport.width;
+
+          page.render({ canvasContext: context, viewport: viewport });
+          document.getElementById('pageNumDisplay').textContent = `Hal ${num} / ${pdfDoc.numPages}`;
+          
+          document.getElementById('prevPage').disabled = num <= 1;
+          document.getElementById('nextPage').disabled = num >= pdfDoc.numPages;
+        });
+      }
+
+      document.getElementById('zoomInBtn').addEventListener('click', () => {
+        if (userZoomFactor < 2.5) {
+          userZoomFactor += 0.15;
+          updateZoomText();
+          renderPage(pageNum);
+        }
+      });
+
+      document.getElementById('zoomOutBtn').addEventListener('click', () => {
+        if (userZoomFactor > 0.5) {
+          userZoomFactor -= 0.15;
+          updateZoomText();
+          renderPage(pageNum);
+        }
+      });
+
+      document.getElementById('zoomResetBtn').addEventListener('click', () => {
+        userZoomFactor = 1.0;
+        updateZoomText();
+        renderPage(pageNum);
+      });
+
+      function updateZoomText() {
+        document.getElementById('zoomLevelText').textContent = Math.round(userZoomFactor * 100) + '%';
+      }
+
+      document.getElementById('prevPage').addEventListener('click', () => {
+        if (pageNum <= 1) return;
+        pageNum--;
+        renderPage(pageNum);
+      });
+
+      document.getElementById('nextPage').addEventListener('click', () => {
+        if (pageNum >= pdfDoc.numPages) return;
+        pageNum++;
+        renderPage(pageNum);
+      });
+
+      function getPadPos(e) {
+        const rect = pad.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const scaleX = pad.width / rect.width;
+        const scaleY = pad.height / rect.height;
+        return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+      }
+
+      pad.addEventListener('mousedown', (e) => {
+        isDrawing = true;
+        padCtx.beginPath();
+        const p = getPadPos(e);
+        padCtx.moveTo(p.x, p.y);
+      });
+      pad.addEventListener('touchstart', (e) => {
+        isDrawing = true;
+        padCtx.beginPath();
+        const p = getPadPos(e);
+        padCtx.moveTo(p.x, p.y);
+        e.preventDefault();
+      });
+
+      pad.addEventListener('mousemove', (e) => {
+        if (!isDrawing) return;
+        const p = getPadPos(e);
+        padCtx.lineWidth = 2.5;
+        padCtx.lineCap = 'round';
+        padCtx.strokeStyle = '#000000';
+        padCtx.lineTo(p.x, p.y);
+        padCtx.stroke();
+      });
+      pad.addEventListener('touchmove', (e) => {
+        if (!isDrawing) return;
+        const p = getPadPos(e);
+        padCtx.lineWidth = 2.5;
+        padCtx.lineCap = 'round';
+        padCtx.strokeStyle = '#000000';
+        padCtx.lineTo(p.x, p.y);
+        padCtx.stroke();
+        e.preventDefault();
+      });
+
+      pad.addEventListener('mouseup', () => isDrawing = false);
+      pad.addEventListener('mouseleave', () => isDrawing = false);
+      pad.addEventListener('touchend', () => isDrawing = false);
+      pad.addEventListener('touchcancel', () => isDrawing = false);
+
+      document.getElementById('clearPadBtn').addEventListener('click', () => {
+        padCtx.clearRect(0, 0, pad.width, pad.height);
+        document.getElementById('signerName').value = '';
+        document.getElementById('dragSignature').style.display = 'none';
+        mergedDataUrl = null;
+      });
+
+      document.getElementById('applySigBtn').addEventListener('click', () => {
+        const nameText = document.getElementById('signerName').value.trim();
+
+        const tempCanvas = document.createElement('canvas');
+        const tempCtx = tempCanvas.getContext('2d');
+        
+        const extraNameHeight = nameText ? 22 : 0;
+        tempCanvas.width = pad.width;
+        tempCanvas.height = pad.height + extraNameHeight;
+
+        tempCtx.drawImage(pad, 0, 0);
+
+        if (nameText) {
+          tempCtx.font = 'bold 16px "Plus Jakarta Sans", sans-serif';
+          tempCtx.fillStyle = '#000000';
+          tempCtx.textAlign = 'center';
+          tempCtx.fillText(`( ${nameText} )`, tempCanvas.width / 2, pad.height + 14);
+        }
+
+        mergedDataUrl = tempCanvas.toDataURL('image/png');
+        mergedAspectRatio = tempCanvas.width / tempCanvas.height;
+
+        const previewWidth = 150;
+        const previewHeight = previewWidth / mergedAspectRatio;
+
+        const dragSig = document.getElementById('dragSignature');
+        dragSig.style.width = previewWidth + 'px';
+        dragSig.style.height = previewHeight + 'px';
+        
+        document.getElementById('sigImagePreview').src = mergedDataUrl;
+        
+        dragSig.style.display = 'block';
+        dragSig.style.left = '20px';
+        dragSig.style.top = '20px';
+        posX = 20;
+        posY = 20;
+      });
+
+      const dragSig = document.getElementById('dragSignature');
+      const resizeHandle = document.getElementById('resizeHandle');
+      let isDragging = false, isResizing = false;
+      let startX, startY, initialLeft, initialTop, initialWidth;
+
+      dragSig.addEventListener('mousedown', (e) => {
+        if (e.target === resizeHandle) return;
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        initialLeft = dragSig.offsetLeft;
+        initialTop = dragSig.offsetTop;
+      });
+
+      dragSig.addEventListener('touchstart', (e) => {
+        if (e.target === resizeHandle) return;
+        isDragging = true;
+        startX = e.touches[0].clientX;
+        startY = e.touches[0].clientY;
+        initialLeft = dragSig.offsetLeft;
+        initialTop = dragSig.offsetTop;
+      });
+
+      resizeHandle.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+        isResizing = true;
+        startX = e.clientX;
+        initialWidth = dragSig.offsetWidth;
+      });
+
+      resizeHandle.addEventListener('touchstart', (e) => {
+        e.stopPropagation();
+        isResizing = true;
+        startX = e.touches[0].clientX;
+        initialWidth = dragSig.offsetWidth;
+      });
+
+      document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+          const dx = e.clientX - startX;
+          const dy = e.clientY - startY;
+          posX = Math.max(0, initialLeft + dx);
+          posY = Math.max(0, initialTop + dy);
+          dragSig.style.left = posX + 'px';
+          dragSig.style.top = posY + 'px';
+        } else if (isResizing) {
+          const dx = e.clientX - startX;
+          const newWidth = Math.max(60, initialWidth + dx);
+          const newHeight = newWidth / mergedAspectRatio;
+          dragSig.style.width = newWidth + 'px';
+          dragSig.style.height = newHeight + 'px';
+        }
+      });
+
+      document.addEventListener('touchmove', (e) => {
+        if (isDragging) {
+          const dx = e.touches[0].clientX - startX;
+          const dy = e.touches[0].clientY - startY;
+          posX = Math.max(0, initialLeft + dx);
+          posY = Math.max(0, initialTop + dy);
+          dragSig.style.left = posX + 'px';
+          dragSig.style.top = posY + 'px';
+        } else if (isResizing) {
+          const dx = e.touches[0].clientX - startX;
+          const newWidth = Math.max(60, initialWidth + dx);
+          const newHeight = newWidth / mergedAspectRatio;
+          dragSig.style.width = newWidth + 'px';
+          dragSig.style.height = newHeight + 'px';
+        }
+      });
+
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+        isResizing = false;
+      });
+
+      document.addEventListener('touchend', () => {
+        isDragging = false;
+        isResizing = false;
+      });
+
+      document.getElementById('saveBtn').addEventListener('click', async () => {
+        if (!activeFileId || !mergedDataUrl || !rawPdfArrayBuffer) {
+          return alert('Pastikan tanda tangan dan nama telah ditempatkan pada PDF.');
+        }
+
+        showAlert('info', 'Menempelkan tanda tangan & memperbarui file PDF...');
+
+        try {
+          const pdfDocLib = await PDFLib.PDFDocument.load(rawPdfArrayBuffer);
+          const pages = pdfDocLib.getPages();
+          const targetPage = pages[pageNum - 1];
+
+          const signatureImage = await pdfDocLib.embedPng(mergedDataUrl);
+          
+          const dragWidth = dragSig.offsetWidth;
+          const dragHeight = dragSig.offsetHeight;
+
+          const sigWidth = dragWidth / currentRenderScale;
+          const sigHeight = dragHeight / currentRenderScale;
+
+          const pageHeight = targetPage.getHeight();
+          const pdfX = posX / currentRenderScale;
+          const pdfY = pageHeight - (posY / currentRenderScale) - sigHeight;
+
+          targetPage.drawImage(signatureImage, {
+            x: pdfX,
+            y: pdfY,
+            width: sigWidth,
+            height: sigHeight,
+          });
+
+          const signedPdfBytes = await pdfDocLib.save();
+          const blob = new Blob([signedPdfBytes], { type: 'application/pdf' });
+          const reader = new FileReader();
+
+          reader.onloadend = async function () {
+            const base64data = reader.result;
+            
+            const res = await callBackendApi("saveSignedPdf", {
+              originalFileId: activeFileId,
+              signedPdfBase64: base64data,
+              targetFolderId: currentSelectedFolderId
+            });
+
+            if (res.success) {
+              showAlert('success', `<strong>Berhasil!</strong> Dokumen tersimpan: <a href="${res.fileUrl}" target="_blank" class="alert-link">${res.fileName}</a>`);
+              loadPdfTable(currentSelectedFolderId);
+            } else {
+              showAlert('danger', 'Gagal menyimpan: ' + res.message);
+            }
+          };
+
+          reader.readAsDataURL(blob);
+
+        } catch (err) {
+          showAlert('danger', 'Terjadi kesalahan: ' + err.message);
+        }
+      });
+
+      function showAlert(type, msg) {
+        const box = document.getElementById('statusAlert');
+        box.className = `alert alert-${type} mt-3 mb-0 small`;
+        box.innerHTML = msg;
+        box.classList.remove('d-none');
+      }
+    </script>
+  </body>
 </html>
